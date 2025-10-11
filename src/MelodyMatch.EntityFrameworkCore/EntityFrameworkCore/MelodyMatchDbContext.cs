@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using MelodyMatch.Entities;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -55,6 +56,12 @@ public class MelodyMatchDbContext :
 
     #endregion
 
+    #region Domain specific entities
+    
+    public DbSet<MelodyMatchUser> MelodyMatchUsers { get; set; }
+    
+    #endregion
+    
     public MelodyMatchDbContext(DbContextOptions<MelodyMatchDbContext> options)
         : base(options)
     {
@@ -65,8 +72,6 @@ public class MelodyMatchDbContext :
     {
         base.OnModelCreating(builder);
 
-        /* Include modules to your migration db context */
-
         builder.ConfigurePermissionManagement();
         builder.ConfigureSettingManagement();
         builder.ConfigureBackgroundJobs();
@@ -76,14 +81,5 @@ public class MelodyMatchDbContext :
         builder.ConfigureFeatureManagement();
         builder.ConfigureTenantManagement();
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
-        /* Configure your own tables/entities inside here */
-
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(MelodyMatchConsts.DbTablePrefix + "YourEntities", MelodyMatchConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
     }
 }

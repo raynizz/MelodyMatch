@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,6 +29,8 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.VirtualFileSystem;
 using ElmahCore.Mvc;
+using MelodyMatch.MelodyMatchUser;
+using MelodyMatch.MelodyMatchUser.Services;
 using Microsoft.IdentityModel.Tokens;
 
 namespace MelodyMatch;
@@ -35,7 +38,6 @@ namespace MelodyMatch;
 [DependsOn(
     typeof(MelodyMatchHttpApiModule),
     typeof(AbpAutofacModule),
-    typeof(AbpDistributedLockingModule),
     typeof(AbpAspNetCoreMvcUiMultiTenancyModule),
     typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
     typeof(MelodyMatchApplicationModule),
@@ -115,7 +117,7 @@ public class MelodyMatchHttpApiHostModule : AbpModule
 
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        // TODO: add Internal User Service like in Genesis project
+        context.Services.AddSingleton<IMelodyMatchUserInternalAppService, MelodyMatchUserInternalAppService>();
         context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddAbpJwtBearer(options =>
             {
@@ -130,15 +132,60 @@ public class MelodyMatchHttpApiHostModule : AbpModule
                 {
                     ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
                 };
-                // TODO: add token validation like in Genesis project
                 options.Audience = "MelodyMatch";
+                
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        await HandleTokenValidated(context, configuration);
+                        await Task.CompletedTask.ConfigureAwait(false);
+                    }
+                };
             });
 
-        // probably it doesn't needed
-        /*context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
+        context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
-        });*/
+        });
+    }
+    
+    private static async Task HandleTokenValidated(TokenValidatedContext context, IConfiguration configuration)
+    {
+        var appService = context.HttpContext.RequestServices.GetService<IMelodyMatchUserInternalAppService>();
+        if(appService == null || context.Principal == null)
+        {
+            return;
+        }
+        var configClaims = configuration["AuthServer:ClaimsToCheck"];
+        var claimsToCheck = configClaims.Split(",");
+        var email = "";
+        foreach (var claim in claimsToCheck)
+        {
+            var emailClaim = context.Principal.Claims .FirstOrDefault(x => x.Type == claim);
+            if (emailClaim == null)
+            {
+                continue;
+            }
+
+            email = emailClaim.Value;
+            // check not null and that is a valid email address
+            if (!string.IsNullOrWhiteSpace(email) && email.Contains("@"))
+            {
+                break;
+            }
+        }
+        if(email.IsNullOrEmpty())
+        {
+            return;
+        }
+        var webUser = await appService.GetUserInfoByEmail(email);
+        if (webUser == null)
+        {
+            return;
+        }
+        var appIdentity = new ClaimsIdentity(new List<Claim> { new Claim("UserInfoDto", JsonSerializer.Serialize(webUser)) });
+        context.Principal?.AddIdentity(appIdentity);
     }
 
     private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
