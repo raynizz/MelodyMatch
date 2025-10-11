@@ -5,12 +5,12 @@ using Localization.Resources.AbpUi;
 using Medallion.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MelodyMatch.EntityFrameworkCore;
 using MelodyMatch.Localization;
 using MelodyMatch.MultiTenancy;
+using Microsoft.Extensions.Configuration;
 using Volo.Abp;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
@@ -36,7 +36,6 @@ namespace MelodyMatch;
 
 [DependsOn(
     typeof(AbpAutofacModule),
-    typeof(AbpDistributedLockingModule),
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpAccountApplicationModule),
     typeof(AbpAccountHttpApiModule),
@@ -70,7 +69,7 @@ public class MelodyMatchAuthServerModule : AbpModule
 
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "0acfd2a2-00b0-4011-8f4a-390809853aee");
+                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "0c8f4cf0-5d47-4e6f-b691-3323a3ed0757");
             });
         }
     }
