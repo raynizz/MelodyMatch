@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using MelodyMatch.MelodyMatchUser.DTOs;
-using MelodyMatch.Repositories;
+using MelodyMatch.Users;
 using Volo.Abp.Users;
 
 namespace MelodyMatch.MelodyMatchUser;
@@ -24,10 +24,11 @@ internal class GetUserInfoByEmailHelper
         }
         var userInfoDto = new UserInfoDto
         {
-            FullName = user.FirstName + user.LastName,
-            Email = user.Email,
+            FullName = user.IdentityUser.Name + user.IdentityUser.Surname,
+            Email = user.IdentityUser.Email,
             Id = user.Id,
-            Username = user.UserName,
+            Username = user.IdentityUser.UserName,
+            IdentityUserId = user.IdentityUserId
         };
         
         /*

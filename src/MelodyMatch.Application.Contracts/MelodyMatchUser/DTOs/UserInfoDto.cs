@@ -23,4 +23,7 @@ public class UserInfoDto
 
     [JsonPropertyName("id")]
     public Guid Id { get; set; } = Guid.Empty;
+    
+    [JsonPropertyName("identityUserId")]
+    public Guid IdentityUserId { get; set; } = Guid.Empty;
 }
