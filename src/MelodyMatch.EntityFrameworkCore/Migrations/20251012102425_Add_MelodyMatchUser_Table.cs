@@ -20,11 +20,7 @@ namespace MelodyMatch.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    LastName = table.Column<string>(type: "text", nullable: false),
-                    FirstName = table.Column<string>(type: "text", nullable: false),
-                    UserName = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: true),
+                    IdentityUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Gender = table.Column<int>(type: "integer", nullable: false),
                     ExtraProperties = table.Column<string>(type: "text", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
@@ -39,20 +35,19 @@ namespace MelodyMatch.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MelodyMatchUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MelodyMatchUsers_AbpUsers_IdentityUserId",
+                        column: x => x.IdentityUserId,
+                        principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_MelodyMatchUsers_Email",
+                name: "IX_MelodyMatchUsers_IdentityUserId",
                 schema: "public",
                 table: "MelodyMatchUsers",
-                column: "Email",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MelodyMatchUsers_UserName",
-                schema: "public",
-                table: "MelodyMatchUsers",
-                column: "UserName",
+                column: "IdentityUserId",
                 unique: true);
         }
 

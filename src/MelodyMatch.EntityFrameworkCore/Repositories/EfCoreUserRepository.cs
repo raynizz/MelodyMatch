@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using MelodyMatch.Entities;
 using MelodyMatch.EntityFrameworkCore;
+using MelodyMatch.Users;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -21,6 +21,6 @@ public class EfCoreUserRepository : EfCoreRepository<MelodyMatchDbContext, Melod
 
         return await dbContext
             .MelodyMatchUsers
-            .FirstOrDefaultAsync(x => x.Email == email);
+            .FirstOrDefaultAsync(x => x.IdentityUser.Email == email);
     }
 }

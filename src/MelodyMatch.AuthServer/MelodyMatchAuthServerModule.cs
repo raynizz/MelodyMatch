@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Localization.Resources.AbpUi;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using MelodyMatch.EntityFrameworkCore;
 using MelodyMatch.Localization;
 using MelodyMatch.MultiTenancy;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Volo.Abp;
 using Volo.Abp.Account;
@@ -87,6 +90,8 @@ public class MelodyMatchAuthServerModule : AbpModule
                     typeof(AbpUiResource),
                     typeof(AccountResource)
                 );
+            options.Languages.Add(new  LanguageInfo("en", "en", "English"));
+            options.Languages.Add(new  LanguageInfo("uk", "uk", "Українська"));
         });
 
         Configure<AbpBundlingOptions>(options =>
@@ -168,8 +173,25 @@ public class MelodyMatchAuthServerModule : AbpModule
         {
             app.UseDeveloperExceptionPage();
         }
+        
+        var supportedCultures = new[]
+        {
+            new CultureInfo("en"),
+            new CultureInfo("uk")
+        };
 
-        app.UseAbpRequestLocalization();
+        app.UseAbpRequestLocalization(options =>
+        {
+            options.DefaultRequestCulture = new RequestCulture("en");
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+            options.RequestCultureProviders = new List<IRequestCultureProvider>
+            {
+                new QueryStringRequestCultureProvider(),
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider()
+            };
+        });
 
         if (!env.IsDevelopment())
         {

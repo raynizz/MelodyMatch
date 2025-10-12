@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -31,6 +32,7 @@ using Volo.Abp.VirtualFileSystem;
 using ElmahCore.Mvc;
 using MelodyMatch.MelodyMatchUser;
 using MelodyMatch.MelodyMatchUser.Services;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
 
 namespace MelodyMatch;
@@ -72,7 +74,7 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         Configure<AbpLocalizationOptions>(options =>
         {
             options.Languages.Add(new LanguageInfo("en", "en", "English"));
-            options.Languages.Add(new LanguageInfo("uk", "uk", "Ukrainian"));
+            options.Languages.Add(new LanguageInfo("uk", "uk", "Українська"));
             options.DefaultResourceType = typeof(MelodyMatchApplicationContractsModule);
 
         });
@@ -234,7 +236,23 @@ public class MelodyMatchHttpApiHostModule : AbpModule
             app.UseDeveloperExceptionPage();
         }
 
-        app.UseAbpRequestLocalization();
+        var supportedCultures = new[]
+        {
+            new CultureInfo("en"),
+            new CultureInfo("uk")
+        };
+        app.UseAbpRequestLocalization(options =>
+        {
+            options.DefaultRequestCulture = new RequestCulture("en");
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+            options.RequestCultureProviders = new List<IRequestCultureProvider>
+            {
+                new QueryStringRequestCultureProvider(),
+                new CookieRequestCultureProvider()
+            };
+        });
+        
         app.UseCorrelationId();
         app.MapAbpStaticAssets();
         app.UseRouting();

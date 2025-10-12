@@ -1,4 +1,4 @@
-using MelodyMatch.Entities;
+using MelodyMatch.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Volo.Abp.EntityFrameworkCore.Modeling;
@@ -13,14 +13,13 @@ public class MelodyMatchUserEntityTypeConfiguration : IEntityTypeConfiguration<M
 
         builder.ConfigureByConvention();
 
-        builder.Property(x => x.UserName).IsRequired();
-        builder.HasIndex(x => x.UserName).IsUnique();
-        
-        builder.Property(x => x.FirstName).IsRequired();
+        builder.Property(x => x.IdentityUserId).IsRequired();
+        builder.HasOne(x => x.IdentityUser)
+            .WithOne()
+            .HasForeignKey<MelodyMatchUser>(x => x.IdentityUserId)
+            .IsRequired();
+        builder.HasIndex(x => x.IdentityUserId).IsUnique();
         
         builder.Property(x => x.Gender).IsRequired();
-        
-        builder.Property(x => x.Email).IsRequired();
-        builder.HasIndex(x => x.Email).IsUnique();
     }
 }

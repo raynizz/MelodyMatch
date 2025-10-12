@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using MelodyMatch.MelodyMatchUser.DTOs;
 using MelodyMatch.MelodyMatchUser.Services;
-using MelodyMatch.Repositories;
+using MelodyMatch.Users;
 using Microsoft.Extensions.Configuration;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Users;

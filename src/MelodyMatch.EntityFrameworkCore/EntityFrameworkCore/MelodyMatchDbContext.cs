@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using MelodyMatch.Entities;
+using MelodyMatch.Users;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
