@@ -1,4 +1,8 @@
 ﻿using System.Reflection;
+using MelodyMatch.Chats;
+using MelodyMatch.Complaints;
+using MelodyMatch.Reactions;
+using MelodyMatch.UserProfiles;
 using MelodyMatch.Users;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
@@ -59,6 +63,18 @@ public class MelodyMatchDbContext :
     #region Domain specific entities
     
     public DbSet<MelodyMatchUser> MelodyMatchUsers { get; set; }
+    
+    public DbSet<UserProfile> UserProfiles { get; set; }
+    
+    public DbSet<Reaction> Reactions { get; set; }
+    
+    public DbSet<Message> Messages { get; set; }
+    
+    public DbSet<Chat> Chats { get; set; }
+    
+    public DbSet<Complaint> Complaints { get; set; }
+    
+    public DbSet<ChatParticipant> ChatParticipants { get; set; }
     
     #endregion
     
