@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using MelodyMatch.Enums.MelodyMatchUser;
+using MelodyMatch.Enums.UserProfile;
 using MelodyMatch.Users;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.Guids;
@@ -18,7 +20,15 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
     
     public string Location { get; set; }
     
-    // TODO: add preferred genders, age range, distance radius, etc.
+    public List<GenderType> PreferredGenders { get; set; }
+    
+    public int? PreferredMinAge { get; set; }
+    
+    public int? PreferredMaxAge { get; set; }
+    
+    public List<InterestType>? Interests { get; set; }
+    
+    // TODO: add distance radius, etc.
     
     public List<string> ProfilePhotoUrls { get; set; } // TODO: consider storing photos in a blob storage and saving the URL here
 
@@ -26,7 +36,17 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
     {
     }
     
-    public UserProfile(Guid id, Guid melodyMatchUserId, int age, string bio, string location, List<string> profilePhotoUrls)
+    public UserProfile(
+        Guid id,
+        Guid melodyMatchUserId,
+        int age,
+        string bio,
+        string location,
+        List<string> profilePhotoUrls,
+        List<GenderType> preferredGenders,
+        int? preferredMinAge = null,
+        int? preferredMaxAge = null,
+        List<InterestType>? interests = null)
         : base(id)
     {
         MelodyMatchUserId = melodyMatchUserId;
@@ -34,9 +54,22 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
         Bio = bio;
         Location = location;
         ProfilePhotoUrls = profilePhotoUrls;
+        PreferredGenders = preferredGenders;
+        PreferredMinAge = preferredMinAge;
+        PreferredMaxAge = preferredMaxAge;
+        Interests = interests;
     }
 
-    public UserProfile(Guid melodyMatchUserId, int age, string bio, string location, List<string> profilePhotoUrls)
+    public UserProfile(
+        Guid melodyMatchUserId,
+        int age,
+        string bio,
+        string location,
+        List<string> profilePhotoUrls,
+        List<GenderType> preferredGenders,
+        int? preferredMinAge = null,
+        int? preferredMaxAge = null,
+        List<InterestType>? interests = null)
     {
         Id = SimpleGuidGenerator.Instance.Create();
         MelodyMatchUserId = melodyMatchUserId;
@@ -44,6 +77,10 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
         Bio = bio;
         Location = location;
         ProfilePhotoUrls = profilePhotoUrls;
+        PreferredGenders = preferredGenders;
+        PreferredMinAge = preferredMinAge;
+        PreferredMaxAge = preferredMaxAge;
+        Interests = interests;
     }
     
     // TODO: add spotify integration properties (favorite genres, artists, etc.)
