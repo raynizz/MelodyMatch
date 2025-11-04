@@ -21,6 +21,7 @@ public class EfCoreUserRepository : EfCoreRepository<MelodyMatchDbContext, Melod
 
         return await dbContext
             .MelodyMatchUsers
+            .Include(x => x.IdentityUser)
             .FirstOrDefaultAsync(x => x.IdentityUser.Email == email);
     }
 }
