@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MelodyMatch.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Volo.Abp.EntityFrameworkCore;
@@ -13,9 +14,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MelodyMatch.Migrations
 {
     [DbContext(typeof(MelodyMatchDbContext))]
-    partial class MelodyMatchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251104195151_Extended_UserProfile_Table")]
+    partial class Extended_UserProfile_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
