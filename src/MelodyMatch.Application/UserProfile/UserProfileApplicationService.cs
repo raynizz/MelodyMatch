@@ -24,14 +24,14 @@ public class UserProfileApplicationService : ApplicationService, IUserProfileApp
         _userProfileRepository = userProfileRepository;
     }
     
-    public async Task<UserProfileResponseDto> GetUserProfileByUserIdAsync(Guid melodyMatchUserId)
+    public async Task<UserProfileResponseDto> GetByMelodyMatchUserIdAsync(Guid melodyMatchUserId)
     {
-        var userProfile = await _userProfileRepository.GetByMelodyMatchUserId(melodyMatchUserId);
+        var userProfile = await _userProfileRepository.GetByMelodyMatchUserIdAsync(melodyMatchUserId);
         
         return ObjectMapper.Map<UserProfiles.UserProfile, UserProfileResponseDto>(userProfile);
     }
     
-    public async Task<UserProfileResponseDto> GetUserProfileByIdAsync(Guid id)
+    public async Task<UserProfileResponseDto> GetByIdAsync(Guid id)
     {
         var userProfile = await _userProfileRepository.GetByIdAsync(id);
         
@@ -46,7 +46,7 @@ public class UserProfileApplicationService : ApplicationService, IUserProfileApp
         return ObjectMapper.Map<UserProfiles.UserProfile, UserProfileResponseDto>(createdUserProfile);
     }
 
-    public async Task<UserProfileResponseDto> UpdateUserProfileAsync(UpdateUserProfileRequestDto request)
+    public async Task<UserProfileResponseDto> UpdateAsync(UpdateUserProfileRequestDto request)
     {
         var userProfile = await _userProfileRepository.GetByIdAsync(request.Id);
         

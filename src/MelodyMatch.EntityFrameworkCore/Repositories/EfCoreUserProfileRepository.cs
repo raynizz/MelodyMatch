@@ -35,7 +35,7 @@ public class EfCoreUserProfileRepository : EfCoreRepository<MelodyMatchDbContext
             .FirstOrDefaultAsync(x => x.Id == id);
     }
     
-    public async Task<UserProfile> GetByMelodyMatchUserId(Guid melodyMatchUserId)
+    public async Task<UserProfile> GetByMelodyMatchUserIdAsync(Guid melodyMatchUserId)
     {
         var dbContext = await GetDbContextAsync();
         

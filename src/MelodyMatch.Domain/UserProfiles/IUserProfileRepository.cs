@@ -10,7 +10,7 @@ public interface IUserProfileRepository : IRepository<UserProfile, Guid>
     
     Task<UserProfile> GetByIdAsync(Guid id);
     
-    Task<UserProfile> GetByMelodyMatchUserId(Guid melodyMatchUserId);
+    Task<UserProfile> GetByMelodyMatchUserIdAsync(Guid melodyMatchUserId);
     
     Task DeleteByMelodyMatchUserIdAsync(Guid melodyMatchUserId);
 }

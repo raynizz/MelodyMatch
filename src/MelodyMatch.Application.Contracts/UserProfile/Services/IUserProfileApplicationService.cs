@@ -11,13 +11,13 @@ namespace MelodyMatch.UserProfile.Services;
 
 public interface IUserProfileApplicationService : IApplicationService
 {
-    Task<UserProfileResponseDto> GetUserProfileByUserIdAsync(Guid melodyMatchUserId);
+    Task<UserProfileResponseDto> GetByMelodyMatchUserIdAsync(Guid melodyMatchUserId);
 
-    Task<UserProfileResponseDto> GetUserProfileByIdAsync(Guid id);
+    Task<UserProfileResponseDto> GetByIdAsync(Guid id);
     
     Task<UserProfileResponseDto> CreateAsync(CreateUserProfileRequestDto request);
     
-    Task<UserProfileResponseDto> UpdateUserProfileAsync(UpdateUserProfileRequestDto request);
+    Task<UserProfileResponseDto> UpdateAsync(UpdateUserProfileRequestDto request);
     
     Task DeleteByMelodyMatchUserIdAsync(Guid melodyMatchUserId);
     
