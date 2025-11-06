@@ -22,8 +22,4 @@
     <PackageReference Include="Volo.Abp.SettingManagement.Application.Contracts" Version="9.3.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="MelodyMatchUser\Filters\" />
-  </ItemGroup>
-
 </Project>
