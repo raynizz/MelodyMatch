@@ -19,6 +19,8 @@ public class MelodyMatchUser : FullAuditedAggregateRoot<Guid>
 
     public GenderType Gender { get; set; } = GenderType.NotSpecified;
     
+    public string AvatarUrl { get; set; } = string.Empty;
+    
     public UserProfile UserProfile { get; set; } = default!;
     
     public List<Reaction> SentReactions { get; set; } = new List<Reaction>();

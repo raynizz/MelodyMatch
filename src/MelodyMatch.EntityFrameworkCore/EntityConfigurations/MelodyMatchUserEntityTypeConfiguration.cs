@@ -21,5 +21,9 @@ public class MelodyMatchUserEntityTypeConfiguration : IEntityTypeConfiguration<M
         builder.HasIndex(x => x.IdentityUserId).IsUnique();
         
         builder.Property(x => x.Gender).IsRequired();
+        
+        builder.Property(x => x.AvatarUrl)
+            .HasDefaultValue(string.Empty)
+            .IsRequired(false);
     }
 }

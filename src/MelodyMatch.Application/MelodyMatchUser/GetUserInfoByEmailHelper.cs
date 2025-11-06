@@ -7,16 +7,16 @@ namespace MelodyMatch.MelodyMatchUser;
 
 internal class GetUserInfoByEmailHelper
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IMelodyMatchUserRepository _melodyMatchUserRepository;
 
-    public GetUserInfoByEmailHelper(IUserRepository userRepository)
+    public GetUserInfoByEmailHelper(IMelodyMatchUserRepository melodyMatchUserRepository)
     {
-        _userRepository = userRepository;
+        _melodyMatchUserRepository = melodyMatchUserRepository;
     }
 
     public async Task<UserInfoDto?> GetUserInfoByEmail(string email)
     {
-        var user = await _userRepository.GetUserByEmail(email);
+        var user = await _melodyMatchUserRepository.GetUserByEmail(email);
 
         if (user == null)
         {
