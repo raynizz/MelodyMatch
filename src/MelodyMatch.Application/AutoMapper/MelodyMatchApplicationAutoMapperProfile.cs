@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using MelodyMatch.MelodyMatchUser.DTOs.Requests;
 using MelodyMatch.MelodyMatchUser.DTOs.Responses;
+using MelodyMatch.Reaction.DTOs.Requests;
+using MelodyMatch.Reaction.DTOs.Responses;
 using MelodyMatch.UserProfile.DTOs.Requests;
 using MelodyMatch.UserProfile.DTOs.Responses;
 using Volo.Abp.AutoMapper;
@@ -13,6 +15,7 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
     {
         MapUserProfile();
         MapMelodyMatchUser();
+        MapReactions();
     }
     
     private void MapUserProfile()
@@ -35,5 +38,16 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
             .IgnoreAuditedObjectProperties();
 
         CreateMap<Users.MelodyMatchUser, MelodyMatchUserResponseDto>();
+    }
+    
+    private void MapReactions()
+    {
+        CreateMap<CreateReactionRequestDto, Reactions.Reaction>()
+            .IgnoreAuditedObjectProperties();
+
+        CreateMap<UpdateMelodyMatchUserRequestDto, Reactions.Reaction>()
+            .IgnoreAuditedObjectProperties();
+        
+        CreateMap<Reactions.Reaction, ReactionResponseDto>();
     }
 }
