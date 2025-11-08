@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories;
 
@@ -17,4 +18,6 @@ public interface IMelodyMatchUserRepository : IRepository<MelodyMatchUser, Guid>
     Task DeleteByIdAsync(Guid userId);
     
     Task DeleteByIdentityUserIdAsync(Guid identityUserId);
+    
+    Task<HashSet<string>> GetAllAvatarUrlsHashAsync();
 }
