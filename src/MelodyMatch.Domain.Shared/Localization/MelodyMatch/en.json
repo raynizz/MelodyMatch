@@ -4,6 +4,10 @@
     "AppName": "MelodyMatch",
     "Menu:Home": "Home",
     "Welcome": "Welcome",
-    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io."
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
+    "MelodyMatch:File:00001": "File can't be empty.",
+    "MelodyMatch:File:00002": "File size exceeds the limit of {limit} MB.",
+    "MelodyMatch:File:00003": "Unsupported file format. Supported formats are: {allowedExtensions}.",
+    "MelodyMatch:File:00004": "File name can't be empty."
   }
 }

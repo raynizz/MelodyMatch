@@ -30,10 +30,13 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.VirtualFileSystem;
 using ElmahCore.Mvc;
+using MelodyMatch.Localization;
 using MelodyMatch.MelodyMatchUser;
 using MelodyMatch.MelodyMatchUser.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
+using Volo.Abp.AspNetCore.Mvc.Libs;
 
 namespace MelodyMatch;
 
@@ -62,6 +65,11 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         ConfigureSwaggerServices(context, configuration);
         ConfigureLocalization();
         ConfigureElmah(context);
+        
+        Configure<AbpMvcLibsOptions>(options =>
+        {
+            options.CheckLibs = false;
+        });
     }
     
     private void ConfigureElmah(ServiceConfigurationContext context)
@@ -75,7 +83,7 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         {
             options.Languages.Add(new LanguageInfo("en", "en", "English"));
             options.Languages.Add(new LanguageInfo("uk", "uk", "Українська"));
-            options.DefaultResourceType = typeof(MelodyMatchApplicationContractsModule);
+            options.DefaultResourceType = typeof(MelodyMatchResource);
 
         });
     }
@@ -249,7 +257,8 @@ public class MelodyMatchHttpApiHostModule : AbpModule
             options.RequestCultureProviders = new List<IRequestCultureProvider>
             {
                 new QueryStringRequestCultureProvider(),
-                new CookieRequestCultureProvider()
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider()
             };
         });
         
@@ -267,6 +276,14 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         app.UseUnitOfWork();
         app.UseDynamicClaims();
         app.UseAuthorization();
+        
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+            }
+        });
 
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>

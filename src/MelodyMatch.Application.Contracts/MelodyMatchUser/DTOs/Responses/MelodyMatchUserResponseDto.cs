@@ -14,6 +14,8 @@ public class MelodyMatchUserResponseDto : FullAuditedEntityDto<Guid>
     
     public UserProfileResponseDto UserProfile { get; set; }
     
+    public string AvatarUrl { get; set; } = string.Empty;
+    
     //TODO: add another navigation properties if needed
 
     public MelodyMatchUserResponseDto()

@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using MelodyMatch.EntityFrameworkCore;
 using MelodyMatch.Users;
@@ -84,5 +87,15 @@ public class EfCoreMelodyMatchUserRepository : EfCoreRepository<MelodyMatchDbCon
             dbContext.MelodyMatchUsers.Remove(melodyMatchUser);
             await dbContext.SaveChangesAsync();
         }
+    }
+    
+    public async Task<HashSet<string>> GetAllAvatarUrlsHashAsync()
+    {
+        var dbContext = await GetDbContextAsync();
+        
+        return dbContext.MelodyMatchUsers
+            .Where(u => !string.IsNullOrWhiteSpace(u.AvatarUrl))
+            .Select(u => Path.GetFileName(u.AvatarUrl))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 }
