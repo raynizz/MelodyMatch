@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
+using MelodyMatch.Chat.DTOs.Requests;
+using MelodyMatch.Chat.DTOs.Responses;
 using MelodyMatch.Complaint.DTOs.Requests;
 using MelodyMatch.Complaint.DTOs.Responses;
 using MelodyMatch.MelodyMatchUser.DTOs.Requests;
@@ -19,6 +22,8 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
         MapMelodyMatchUser();
         MapReactions();
         MapComplaints();
+        MapChats();
+        MapMessages();
     }
     
     private void MapUserProfile()
@@ -63,5 +68,27 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
             .IgnoreAuditedObjectProperties();
         
         CreateMap<Complaints.Complaint, ComplaintResponseDto>();
+    }
+    
+    private void MapChats()
+    {
+        CreateMap<Chats.Chat, ChatResponseDto>()
+            .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants.Select(p => p.User)));
+        
+        CreateMap<CreateChatRequestDto, Chats.Chat>()
+            .IgnoreAuditedObjectProperties();
+    }
+    
+    
+    private void MapMessages()
+    {
+        CreateMap<Chats.Message, MessageResponseDto>();
+        
+        
+        CreateMap<CreateMessageRequestDto, Chats.Message>()
+            .IgnoreAuditedObjectProperties();
+
+        CreateMap<UpdateMessageRequestDto, Chats.Message>()
+            .IgnoreAuditedObjectProperties();
     }
 }
