@@ -2,6 +2,7 @@
 using MelodyMatch.Chats;
 using MelodyMatch.Complaints;
 using MelodyMatch.Reactions;
+using MelodyMatch.ShownUserProfiles;
 using MelodyMatch.UserProfiles;
 using MelodyMatch.Users;
 using Microsoft.EntityFrameworkCore;
@@ -75,6 +76,8 @@ public class MelodyMatchDbContext :
     public DbSet<Complaint> Complaints { get; set; }
     
     public DbSet<ChatParticipant> ChatParticipants { get; set; }
+    
+    public DbSet<ShownUserProfile> ShownUserProfiles { get; set; }
     
     #endregion
     
