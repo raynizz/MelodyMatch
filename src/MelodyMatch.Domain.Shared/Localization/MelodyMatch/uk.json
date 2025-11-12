@@ -8,6 +8,7 @@
     "MelodyMatch:File:00001": "Файл не може бути порожнім.",
     "MelodyMatch:File:00002": "Максимальний розмір файлу сягає {limit} MB.",
     "MelodyMatch:File:00003": "Тип файлу не підтримується. Дозволені типи: {allowedExtensions}.",
-    "MelodyMatch:File:00004": "Ім'я файлу не може бути порожнім."
+    "MelodyMatch:File:00004": "Ім'я файлу не може бути порожнім.",
+    "MelodyMatch:UserProfile:00001": "Профіль не заповнено."
   }
 }

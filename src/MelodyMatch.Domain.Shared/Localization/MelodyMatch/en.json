@@ -8,6 +8,7 @@
     "MelodyMatch:File:00001": "File can't be empty.",
     "MelodyMatch:File:00002": "File size exceeds the limit of {limit} MB.",
     "MelodyMatch:File:00003": "Unsupported file format. Supported formats are: {allowedExtensions}.",
-    "MelodyMatch:File:00004": "File name can't be empty."
+    "MelodyMatch:File:00004": "File name can't be empty.",
+    "MelodyMatch:UserProfile:00001": "The profile is not filled."
   }
 }

@@ -8,6 +8,7 @@ using MelodyMatch.Reaction.DTOs.Responses;
 using MelodyMatch.Reaction.Filters;
 using MelodyMatch.Reaction.Services;
 using MelodyMatch.Reactions;
+using MelodyMatch.ShownUserProfiles;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -17,11 +18,14 @@ namespace MelodyMatch.Reaction;
 public class ReactionApplicationService : ApplicationService, IReactionApplicationService
 {
     private readonly IReactionRepository _reactionRepository;
+    private readonly IShownUserProfileRepository _shownUserRepository;
 
     public ReactionApplicationService(
-        IReactionRepository reactionRepository)
+        IReactionRepository reactionRepository,
+        IShownUserProfileRepository shownUserRepository)
     {
         _reactionRepository = reactionRepository;
+        _shownUserRepository = shownUserRepository;
     }
     
     public async Task<PagedResultDto<ReactionResponseDto>> GetListAsync(ReactionFilter filter)
@@ -58,6 +62,11 @@ public class ReactionApplicationService : ApplicationService, IReactionApplicati
         var reaction = ObjectMapper.Map<CreateReactionRequestDto, Reactions.Reaction>(request);
         var createdReaction = await _reactionRepository.AddReactionAsync(reaction);
         
+        if (!await _shownUserRepository.IsUserShown(request.FromUserId, request.ToUserId))
+        {
+            await _shownUserRepository.AddShownUserAsync(request.FromUserId, request.ToUserId);
+        }
+        
         return ObjectMapper.Map<Reactions.Reaction, ReactionResponseDto>(createdReaction);
     }
 
@@ -68,6 +77,11 @@ public class ReactionApplicationService : ApplicationService, IReactionApplicati
         ObjectMapper.Map(request, reaction);
         
         var updatedReaction = await _reactionRepository.UpdateAsync(reaction);
+
+        if (!await _shownUserRepository.IsUserShown(request.FromUserId, request.ToUserId))
+        {
+            await _shownUserRepository.AddShownUserAsync(request.FromUserId, request.ToUserId);
+        }
         
         return ObjectMapper.Map<Reactions.Reaction, ReactionResponseDto>(updatedReaction);
     }

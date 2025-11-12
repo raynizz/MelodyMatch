@@ -9,4 +9,9 @@ public static class MelodyMatchDomainErrorCodes
         public const string InvalidFileExtension = "MelodyMatch:File:00003";
         public const string EmptyFileName = "MelodyMatch:File:00004";
     }
+    
+    public static class UserProfile
+    {
+        public const string UserProfileNotFilled = "MelodyMatch:UserProfile:00001";
+    }
 }
