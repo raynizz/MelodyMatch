@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using MelodyMatch.Constants;
 using MelodyMatch.Users;
@@ -8,41 +7,43 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.BackgroundWorkers;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Threading;
 
 namespace MelodyMatch.File;
 
-public class AvatarCleanupWorker : AsyncPeriodicBackgroundWorkerBase
+public class AvatarCleanupWorker : AsyncPeriodicBackgroundWorkerBase, ITransientDependency
 {
     private readonly IWebHostEnvironment _env;
-    private readonly IMelodyMatchUserRepository _melodyMatchUserRepository;
 
     public AvatarCleanupWorker(
         AbpAsyncTimer timer,
         IServiceScopeFactory scopeFactory,
-        IWebHostEnvironment env,
-        IMelodyMatchUserRepository melodyMatchUserRepository)
+        IWebHostEnvironment env)
         : base(timer, scopeFactory)
     {
         _env = env;
-        _melodyMatchUserRepository = melodyMatchUserRepository;
-        Timer.Period = FileConsts.Avatar.AutoDeleteUnsavedAvatarsTimeHours;
+        Timer.Period = 1000 * 60 * 60 * 6; // кожні 6 годин
     }
-    
-    protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
+
+    protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext context)
     {
         Logger.LogInformation("Running avatar cleanup...");
+
+        using var scope = ServiceScopeFactory.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IMelodyMatchUserRepository>();
 
         var uploadFolder = Path.Combine(_env.WebRootPath ?? "wwwroot", FileConsts.Avatar.AvatarFolderPath);
         if (!Directory.Exists(uploadFolder))
         {
+            Logger.LogWarning("Avatar folder not found: {Path}", uploadFolder);
             return;
         }
 
         var allFiles = Directory.GetFiles(uploadFolder);
-        var usedAvatarUrls = await _melodyMatchUserRepository.GetAllAvatarUrlsHashAsync();
+        var usedAvatarUrls = await repository.GetAllAvatarUrlsHashAsync();
 
-        var deleted = 0;
+        int deleted = 0;
         foreach (var filePath in allFiles)
         {
             try
@@ -55,7 +56,7 @@ public class AvatarCleanupWorker : AsyncPeriodicBackgroundWorkerBase
                 }
 
                 var age = DateTime.UtcNow - System.IO.File.GetCreationTimeUtc(filePath);
-                if (age > TimeSpan.FromHours(FileConsts.Avatar.MaxFileSizeInBytes))
+                if (age > TimeSpan.FromHours(FileConsts.Avatar.AutoDeleteUnsavedAvatarsTimeHours))
                 {
                     System.IO.File.Delete(filePath);
                     deleted++;
@@ -63,7 +64,7 @@ public class AvatarCleanupWorker : AsyncPeriodicBackgroundWorkerBase
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex, "Error deleting file {Path}", filePath);
+                Logger.LogWarning(ex, "Error deleting avatar file: {File}", filePath);
             }
         }
 
