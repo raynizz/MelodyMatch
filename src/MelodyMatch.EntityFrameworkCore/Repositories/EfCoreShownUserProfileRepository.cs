@@ -48,4 +48,13 @@ public class EfCoreShownUserProfileRepository : EfCoreRepository<MelodyMatchDbCo
         return await dbContext.ShownUserProfiles
             .AnyAsync(x => x.UserId == userId && x.ShownUserId == shownUserId);
     }
+
+    public async Task<List<ShownUserProfile>> GetExpiredShownUserProfilesAsync(DateTime expirationDate)
+    {
+        var dbContext = await GetDbContextAsync();
+        
+        return await dbContext.ShownUserProfiles
+            .Where(x => x.ShownAt < expirationDate && !x.Reacted)
+            .ToListAsync();
+    }
 }

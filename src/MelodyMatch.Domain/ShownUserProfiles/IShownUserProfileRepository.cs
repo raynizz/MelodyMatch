@@ -12,4 +12,6 @@ public interface IShownUserProfileRepository : IRepository<ShownUserProfile, Gui
     Task AddShownUserAsync(Guid userId, Guid shownUserId);
     
     Task<bool> IsUserShown(Guid userId, Guid shownUserId);
+
+    Task<List<ShownUserProfile>> GetExpiredShownUserProfilesAsync(DateTime expirationDate);
 }
