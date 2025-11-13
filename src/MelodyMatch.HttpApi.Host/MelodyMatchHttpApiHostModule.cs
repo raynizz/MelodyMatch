@@ -30,6 +30,7 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.VirtualFileSystem;
 using ElmahCore.Mvc;
+using MelodyMatch.File;
 using MelodyMatch.Localization;
 using MelodyMatch.MelodyMatchUser;
 using MelodyMatch.MelodyMatchUser.Services;
@@ -37,6 +38,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Volo.Abp.AspNetCore.Mvc.Libs;
+using Volo.Abp.BackgroundWorkers;
 
 namespace MelodyMatch;
 
@@ -238,6 +240,10 @@ public class MelodyMatchHttpApiHostModule : AbpModule
     {
         var app = context.GetApplicationBuilder();
         var env = context.GetEnvironment();
+        
+        var workerManager = context.ServiceProvider.GetRequiredService<IBackgroundWorkerManager>();
+        workerManager.AddAsync(context.ServiceProvider.GetRequiredService<AvatarCleanupWorker>());
+
 
         if (env.IsDevelopment())
         {

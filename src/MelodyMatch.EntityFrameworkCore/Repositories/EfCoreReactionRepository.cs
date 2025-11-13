@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MelodyMatch.EntityFrameworkCore;
 using MelodyMatch.Reactions;
@@ -36,5 +38,14 @@ public class EfCoreReactionRepository : EfCoreRepository<MelodyMatchDbContext, R
                 .ThenInclude(x => x.UserProfile)
             .FirstOrDefaultAsync(x => x.Id == id);
         
+    }
+    
+    public async Task<List<Guid>> GetReactedUserIdsAsync(Guid fromUserId)
+    {
+        var dbContext = await GetDbContextAsync();
+        return await dbContext.Reactions
+            .Where(r => r.FromUserId == fromUserId)
+            .Select(r => r.ToUserId)
+            .ToListAsync();
     }
 }

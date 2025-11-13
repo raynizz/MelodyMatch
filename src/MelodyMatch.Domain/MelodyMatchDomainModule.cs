@@ -2,8 +2,11 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MelodyMatch.MultiTenancy;
 using MelodyMatch.Users;
+using MelodyMatch.Workers;
+using Volo.Abp;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
+using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.Database;
 using Volo.Abp.Emailing;
@@ -37,6 +40,12 @@ namespace MelodyMatch;
 )]
 public class MelodyMatchDomainModule : AbpModule
 {
+    public override void OnApplicationInitialization(ApplicationInitializationContext context)
+    {
+        var workerManager = context.ServiceProvider.GetRequiredService<IBackgroundWorkerManager>();
+        workerManager.AddAsync(context.ServiceProvider.GetRequiredService<ShownProfilesCleanupWorker>());
+    }
+    
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<AbpLocalizationOptions>(options =>
