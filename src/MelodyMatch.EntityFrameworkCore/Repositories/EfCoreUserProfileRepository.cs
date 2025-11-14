@@ -36,6 +36,7 @@ public class EfCoreUserProfileRepository : EfCoreRepository<MelodyMatchDbContext
         
         return await dbContext.UserProfiles
             .Include(x => x.MelodyMatchUser)
+            .Include(x => x.ProfilePhotos)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
     
@@ -45,6 +46,7 @@ public class EfCoreUserProfileRepository : EfCoreRepository<MelodyMatchDbContext
         
         return await dbContext.UserProfiles
             .Include(x => x.MelodyMatchUser)
+            .Include(x => x.ProfilePhotos)
             .FirstOrDefaultAsync(x => x.MelodyMatchUserId == melodyMatchUserId);
     }
 
@@ -67,6 +69,7 @@ public class EfCoreUserProfileRepository : EfCoreRepository<MelodyMatchDbContext
         var dbContext = await GetDbContextAsync();
 
         var query = dbContext.UserProfiles
+            .Include(x => x.ProfilePhotos)
             .Include(x => x.MelodyMatchUser)
             .ThenInclude(x => x.IdentityUser)
             .AsQueryable();

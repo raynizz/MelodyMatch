@@ -19,4 +19,15 @@ public static class FileConsts
         
         public const string LogAvatarUploadsFileName = "temp-avatars.txt";
     }
+    
+    public static class Profile
+    {
+        public const string ProfileFolderPath = "uploads/profiles";
+        
+        public static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png"];
+        
+        public const int MaxCountPerUserProfile = 3;
+
+        public const int AutoDeleteUnusedPhotosTimeHours = 6;
+    }
 }

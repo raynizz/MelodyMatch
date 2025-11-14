@@ -3,6 +3,7 @@ using System;
 using MelodyMatch.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Volo.Abp.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace MelodyMatch.Migrations
 {
     [DbContext(typeof(MelodyMatchDbContext))]
-    partial class MelodyMatchDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251114220049_Remove_ProfilePhotosUrls_Field_From_Profile_Table")]
+    partial class Remove_ProfilePhotosUrls_Field_From_Profile_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

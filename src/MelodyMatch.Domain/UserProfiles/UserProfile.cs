@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MelodyMatch.Enums.MelodyMatchUser;
 using MelodyMatch.Enums.UserProfile;
+using MelodyMatch.ProfilePhotos;
 using MelodyMatch.Users;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.Guids;
@@ -28,10 +29,10 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
     
     public List<InterestType>? Interests { get; set; }
     
+    public List<ProfilePhoto>? ProfilePhotos { get; set; }
+    
     // TODO: add distance radius, etc.
     
-    public List<string> ProfilePhotoUrls { get; set; } // TODO: consider storing photos in a blob storage and saving the URL here
-
     public UserProfile()
     {
     }
@@ -42,22 +43,22 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
         int age,
         string bio,
         string location,
-        List<string> profilePhotoUrls,
         List<GenderType> preferredGenders,
         int? preferredMinAge = null,
         int? preferredMaxAge = null,
-        List<InterestType>? interests = null)
+        List<InterestType>? interests = null,
+        List<ProfilePhoto>? profilePhotos = null)
         : base(id)
     {
         MelodyMatchUserId = melodyMatchUserId;
         Age = age;
         Bio = bio;
         Location = location;
-        ProfilePhotoUrls = profilePhotoUrls;
         PreferredGenders = preferredGenders;
         PreferredMinAge = preferredMinAge;
         PreferredMaxAge = preferredMaxAge;
         Interests = interests;
+        ProfilePhotos = profilePhotos;
     }
 
     public UserProfile(
@@ -69,18 +70,19 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
         List<GenderType> preferredGenders,
         int? preferredMinAge = null,
         int? preferredMaxAge = null,
-        List<InterestType>? interests = null)
+        List<InterestType>? interests = null,
+        List<ProfilePhoto>? profilePhotos = null)
     {
         Id = SimpleGuidGenerator.Instance.Create();
         MelodyMatchUserId = melodyMatchUserId;
         Age = age;
         Bio = bio;
         Location = location;
-        ProfilePhotoUrls = profilePhotoUrls;
         PreferredGenders = preferredGenders;
         PreferredMinAge = preferredMinAge;
         PreferredMaxAge = preferredMaxAge;
         Interests = interests;
+        ProfilePhotos = profilePhotos;
     }
     
     // TODO: add spotify integration properties (favorite genres, artists, etc.)
