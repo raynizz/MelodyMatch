@@ -9,6 +9,7 @@
     "MelodyMatch:File:00002": "Максимальний розмір файлу сягає {limit} MB.",
     "MelodyMatch:File:00003": "Тип файлу не підтримується. Дозволені типи: {allowedExtensions}.",
     "MelodyMatch:File:00004": "Ім'я файлу не може бути порожнім.",
-    "MelodyMatch:UserProfile:00001": "Профіль не заповнено."
+    "MelodyMatch:UserProfile:00001": "Профіль не заповнено.",
+    "MelodyMatch:UserProfile:00002": "Максимальна дозволена кількість фото в анкеті: {maxCount}."
   }
 }
