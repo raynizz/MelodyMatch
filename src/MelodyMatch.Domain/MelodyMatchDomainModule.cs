@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MelodyMatch.MultiTenancy;
 using MelodyMatch.Users;
@@ -9,6 +10,7 @@ using Volo.Abp.BackgroundJobs;
 using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.BlobStoring.Database;
+using Volo.Abp.Data;
 using Volo.Abp.Emailing;
 using Volo.Abp.EventBus;
 using Volo.Abp.FeatureManagement;
@@ -40,10 +42,13 @@ namespace MelodyMatch;
 )]
 public class MelodyMatchDomainModule : AbpModule
 {
-    public override void OnApplicationInitialization(ApplicationInitializationContext context)
+    public override async Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
     {
         var workerManager = context.ServiceProvider.GetRequiredService<IBackgroundWorkerManager>();
-        workerManager.AddAsync(context.ServiceProvider.GetRequiredService<ShownProfilesCleanupWorker>());
+        await workerManager.AddAsync(context.ServiceProvider.GetRequiredService<ShownProfilesCleanupWorker>());
+
+        var seeder = context.ServiceProvider.GetRequiredService<IDataSeeder>();
+        await seeder.SeedAsync();
     }
     
     public override void ConfigureServices(ServiceConfigurationContext context)

@@ -2,18 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MelodyMatch.Constants;
 using MelodyMatch.Extensions;
 using MelodyMatch.MelodyMatchUser.DTOs.Requests;
 using MelodyMatch.MelodyMatchUser.DTOs.Responses;
 using MelodyMatch.MelodyMatchUser.Filters;
 using MelodyMatch.MelodyMatchUser.Services;
 using MelodyMatch.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
 
 namespace MelodyMatch.MelodyMatchUser;
 
+
+[Authorize(Roles = RolesConsts.Admin + "," + RolesConsts.Dater)]
 public class MelodyMatchUserApplicationService : ApplicationService, IMelodyMatchUserApplicationService
 {
     private readonly IMelodyMatchUserRepository _melodyMatchUserRepository;
@@ -49,8 +53,6 @@ public class MelodyMatchUserApplicationService : ApplicationService, IMelodyMatc
 
         query = query
             .FilterBy(filter.Gender != null, x => x.Gender == filter.Gender);
-        
-        // TODO: add more filters as needed
         
         var totalCount = await AsyncExecuter.CountAsync(query);
         

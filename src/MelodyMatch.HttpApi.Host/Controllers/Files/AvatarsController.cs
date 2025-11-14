@@ -1,11 +1,14 @@
 using System.Threading.Tasks;
+using MelodyMatch.Constants;
 using MelodyMatch.File.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.AspNetCore.Mvc;
 
 namespace MelodyMatch.Controllers.Files;
 
+[Authorize(Roles = RolesConsts.Admin + "," + RolesConsts.Dater)]
 public class AvatarsController : AbpController
 {
     private readonly IAvatarApplicationService _avatarApplicationService;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MelodyMatch.Constants;
 using MelodyMatch.Contexts.MelodyMatchUser;
 using MelodyMatch.DTOs.UserProfile.DbRequests;
 using MelodyMatch.Exceptions;
@@ -12,11 +13,13 @@ using MelodyMatch.Reactions;
 using MelodyMatch.ShownUserProfiles;
 using MelodyMatch.UserProfiles;
 using MelodyMatch.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Services;
 
 namespace MelodyMatch.MatchingServices;
 
+[Authorize(Roles = RolesConsts.Dater)]
 public class RecommendationApplicationService : ApplicationService, IRecommendationApplicationService
 {
     private readonly IUserProfileRepository _userProfileRepository;

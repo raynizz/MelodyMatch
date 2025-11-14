@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MelodyMatch.Constants;
 using MelodyMatch.Extensions;
 using MelodyMatch.Reaction.DTOs.Requests;
 using MelodyMatch.Reaction.DTOs.Responses;
@@ -9,12 +10,14 @@ using MelodyMatch.Reaction.Filters;
 using MelodyMatch.Reaction.Services;
 using MelodyMatch.Reactions;
 using MelodyMatch.ShownUserProfiles;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
 namespace MelodyMatch.Reaction;
 
+[Authorize(Roles = RolesConsts.Dater)]
 public class ReactionApplicationService : ApplicationService, IReactionApplicationService
 {
     private readonly IReactionRepository _reactionRepository;
