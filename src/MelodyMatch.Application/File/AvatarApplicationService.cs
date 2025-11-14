@@ -29,13 +29,14 @@ public class AvatarApplicationService : ApplicationService, IAvatarApplicationSe
     {
         if (file == null || file.Length == 0)
         {
-            throw new EmptyFileExceptions(MelodyMatchDomainErrorCodes.Avatar.EmptyFileName);
+            throw new EmptyFileExceptions(MelodyMatchDomainErrorCodes.File.EmptyFileName);
         }
 
         var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        
         if (!FileConsts.Avatar.AllowedExtensions.Contains(fileExtension))
         {
-            throw new InvalidFileExtensionException(MelodyMatchDomainErrorCodes.Avatar.InvalidFileExtension).WithData("allowedExtensions", string.Join(", ", FileConsts.Avatar.AllowedExtensions));
+            throw new InvalidFileExtensionException(MelodyMatchDomainErrorCodes.File.InvalidFileExtension).WithData("allowedExtensions", string.Join(", ", FileConsts.Avatar.AllowedExtensions));
         }
 
         var folder = Path.Combine(_env.WebRootPath, FileConsts.Avatar.AvatarFolderPath);
@@ -60,7 +61,7 @@ public class AvatarApplicationService : ApplicationService, IAvatarApplicationSe
     {
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            throw new EmptyFileNameException(MelodyMatchDomainErrorCodes.Avatar.EmptyFileName);
+            throw new EmptyFileNameException(MelodyMatchDomainErrorCodes.File.EmptyFileName);
         }
 
         var filePath = Path.Combine(_env.WebRootPath, FileConsts.Avatar.AvatarFolderPath, fileName);

@@ -34,6 +34,7 @@ using MelodyMatch.File;
 using MelodyMatch.Localization;
 using MelodyMatch.MelodyMatchUser;
 using MelodyMatch.MelodyMatchUser.Services;
+using MelodyMatch.Workers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
@@ -243,7 +244,7 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         
         var workerManager = context.ServiceProvider.GetRequiredService<IBackgroundWorkerManager>();
         workerManager.AddAsync(context.ServiceProvider.GetRequiredService<AvatarCleanupWorker>());
-
+        workerManager.AddAsync(context.ServiceProvider.GetRequiredService<ProfilePhotoCleanupWorker>());
 
         if (env.IsDevelopment())
         {

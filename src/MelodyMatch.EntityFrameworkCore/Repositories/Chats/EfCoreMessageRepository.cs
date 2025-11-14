@@ -23,7 +23,7 @@ public class EfCoreMessageRepository : EfCoreRepository<MelodyMatchDbContext, Me
         
         return await dbContext.Messages
             .Where(m => m.ChatId == chatId)
-            .OrderBy(m => m.CreationTime)
+            .OrderByDescending(m => m.CreationTime)
             .Include(m => m.Sender)
             .ThenInclude(u => u.IdentityUser)
             .ToListAsync();

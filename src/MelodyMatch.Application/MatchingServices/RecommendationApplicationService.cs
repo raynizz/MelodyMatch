@@ -84,7 +84,7 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
             Age = p.Age,
             Location = p.Location,
             Bio = p.Bio,
-            PhotosUrls = p.ProfilePhotoUrls?.ToList(),
+            PhotosUrls = p.ProfilePhotos?.Select(x => x.Url)?.ToList(),
             Interests = p.Interests?.Select(i => i.GetDescription()).ToList(),
             Gender = p.MelodyMatchUser.Gender.GetDescription()
         }).ToList();

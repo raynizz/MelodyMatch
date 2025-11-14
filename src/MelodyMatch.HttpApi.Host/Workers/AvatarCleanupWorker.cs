@@ -23,7 +23,7 @@ public class AvatarCleanupWorker : AsyncPeriodicBackgroundWorkerBase, ITransient
         : base(timer, scopeFactory)
     {
         _env = env;
-        Timer.Period = 1000 * 60 * 60 * 6; // кожні 6 годин
+        Timer.Period = 1000 * 60 * 60 * 6;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext context)

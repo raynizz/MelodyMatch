@@ -2,7 +2,7 @@
 
 public static class MelodyMatchDomainErrorCodes
 {
-    public static class Avatar
+    public static class File
     {
         public const string FileIsEmpty = "MelodyMatch:File:00001";
         public const string FileSizeExceedsLimit = "MelodyMatch:File:00002";
@@ -13,5 +13,6 @@ public static class MelodyMatchDomainErrorCodes
     public static class UserProfile
     {
         public const string UserProfileNotFilled = "MelodyMatch:UserProfile:00001";
+        public const string ProfilePhotoLimitExceeded = "MelodyMatch:UserProfile:00002";
     }
 }

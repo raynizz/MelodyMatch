@@ -85,7 +85,9 @@ public class UserProfileApplicationService : ApplicationService, IUserProfileApp
         
         var userProfiles = await AsyncExecuter
             .ToListAsync(
-                query.Include(x => x.MelodyMatchUser));
+                query
+                    .Include(x => x.ProfilePhotos)
+                    .Include(x => x.MelodyMatchUser));
 
         return new PagedResultDto<UserProfileResponseDto>(
             totalCount,

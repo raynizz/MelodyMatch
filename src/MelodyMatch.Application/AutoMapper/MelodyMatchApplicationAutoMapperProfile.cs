@@ -6,6 +6,7 @@ using MelodyMatch.Complaint.DTOs.Requests;
 using MelodyMatch.Complaint.DTOs.Responses;
 using MelodyMatch.MelodyMatchUser.DTOs.Requests;
 using MelodyMatch.MelodyMatchUser.DTOs.Responses;
+using MelodyMatch.ProfilePhoto.DTOs.Responses;
 using MelodyMatch.Reaction.DTOs.Requests;
 using MelodyMatch.Reaction.DTOs.Responses;
 using MelodyMatch.UserProfile.DTOs.Requests;
@@ -24,6 +25,7 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
         MapComplaints();
         MapChats();
         MapMessages();
+        MapProfilePhotos();
     }
     
     private void MapUserProfile()
@@ -79,16 +81,19 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
             .IgnoreAuditedObjectProperties();
     }
     
-    
     private void MapMessages()
     {
         CreateMap<Chats.Message, MessageResponseDto>();
-        
         
         CreateMap<CreateMessageRequestDto, Chats.Message>()
             .IgnoreAuditedObjectProperties();
 
         CreateMap<UpdateMessageRequestDto, Chats.Message>()
             .IgnoreAuditedObjectProperties();
+    }
+    
+    private void MapProfilePhotos()
+    {
+        CreateMap<ProfilePhotos.ProfilePhoto, ProfilePhotoResponseDto>();
     }
 }
