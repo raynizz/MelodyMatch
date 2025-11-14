@@ -27,8 +27,6 @@ public class UserProfileEntityTypeConfiguration : IEntityTypeConfiguration<UserP
         
         builder.Property(x => x.Location).HasMaxLength(50);
         
-        builder.Property(x => x.ProfilePhotoUrls).HasMaxLength(2048);
-        
         builder.Property(x => x.PreferredGenders).IsRequired();
 
         builder.Property(x => x.PreferredMinAge)

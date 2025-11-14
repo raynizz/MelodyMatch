@@ -33,8 +33,6 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
     
     // TODO: add distance radius, etc.
     
-    public List<string> ProfilePhotoUrls { get; set; } // TODO: consider storing photos in a blob storage and saving the URL here
-
     public UserProfile()
     {
     }
@@ -45,7 +43,6 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
         int age,
         string bio,
         string location,
-        List<string> profilePhotoUrls,
         List<GenderType> preferredGenders,
         int? preferredMinAge = null,
         int? preferredMaxAge = null,
@@ -57,7 +54,6 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
         Age = age;
         Bio = bio;
         Location = location;
-        ProfilePhotoUrls = profilePhotoUrls;
         PreferredGenders = preferredGenders;
         PreferredMinAge = preferredMinAge;
         PreferredMaxAge = preferredMaxAge;
@@ -82,7 +78,6 @@ public class UserProfile : FullAuditedAggregateRoot<Guid>
         Age = age;
         Bio = bio;
         Location = location;
-        ProfilePhotoUrls = profilePhotoUrls;
         PreferredGenders = preferredGenders;
         PreferredMinAge = preferredMinAge;
         PreferredMaxAge = preferredMaxAge;
