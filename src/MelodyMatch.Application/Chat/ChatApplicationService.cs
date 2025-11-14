@@ -5,6 +5,7 @@ using MelodyMatch.Chat.DTOs.Requests;
 using MelodyMatch.Chat.DTOs.Responses;
 using MelodyMatch.Chat.Services;
 using MelodyMatch.Chats;
+using MelodyMatch.Constants;
 using MelodyMatch.Contexts.MelodyMatchUser;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.Application.Dtos;
@@ -14,7 +15,7 @@ using Volo.Abp.Users;
 
 namespace MelodyMatch.Chat;
 
-[Authorize]
+[Authorize(Roles = RolesConsts.Admin + "," + RolesConsts.Dater)]
 public class ChatApplicationService : ApplicationService, IChatApplicationService
 {
     private readonly IChatRepository _chatRepository;

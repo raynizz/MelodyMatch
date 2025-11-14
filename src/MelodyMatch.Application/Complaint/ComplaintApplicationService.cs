@@ -7,6 +7,7 @@ using MelodyMatch.Complaint.DTOs.Responses;
 using MelodyMatch.Complaint.Filters;
 using MelodyMatch.Complaint.Services;
 using MelodyMatch.Complaints;
+using MelodyMatch.Constants;
 using MelodyMatch.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ using Volo.Abp.Application.Services;
 
 namespace MelodyMatch.Complaint;
 
-[Authorize]
+[Authorize(Roles = RolesConsts.Admin + "," + RolesConsts.Dater)]
 public class ComplaintApplicationService : ApplicationService, IComplaintApplicationService
 {
     private readonly IComplaintRepository _complaintRepository;
@@ -81,6 +82,7 @@ public class ComplaintApplicationService : ApplicationService, IComplaintApplica
         return ObjectMapper.Map<Complaints.Complaint, ComplaintResponseDto>(updatedComplaint);
     }
 
+    [Authorize(Roles = RolesConsts.Admin)]
     public async Task DeleteComplaintAsync(Guid id)
     {
         var complaint = await _complaintRepository.GetByIdAsync(id);

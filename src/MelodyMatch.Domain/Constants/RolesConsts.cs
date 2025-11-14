@@ -11,4 +11,6 @@ public static class RolesConsts
     public const string DaterDescription = "Regular dating user";
     
     public static string DescriptionFieldName = "Description";
+    
+    public static string[] AllRoles = new[] { Admin, Dater };
 }

@@ -2,18 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MelodyMatch.Constants;
 using MelodyMatch.Extensions;
 using MelodyMatch.UserProfile.DTOs.Requests;
 using MelodyMatch.UserProfile.DTOs.Responses;
 using MelodyMatch.UserProfile.Filters;
 using MelodyMatch.UserProfile.Services;
 using MelodyMatch.UserProfiles;
+using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace MelodyMatch.UserProfile;
 
+[Authorize(Roles = RolesConsts.Admin + "," + RolesConsts.Dater)]
 public class UserProfileApplicationService : ApplicationService, IUserProfileApplicationService
 {
     private readonly IUserProfileRepository _userProfileRepository;
