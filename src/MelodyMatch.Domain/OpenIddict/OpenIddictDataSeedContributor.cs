@@ -122,6 +122,43 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
                 clientUri: swaggerRootUrl
             );
         }
+        
+        // React SPA
+        var spaClientId = configurationSection["MelodyMatch_React:ClientId"];
+        var spaRootUrl = configurationSection["MelodyMatch_React:RootUrl"];
+        
+        if (spaClientId.IsNullOrWhiteSpace() || spaRootUrl.IsNullOrWhiteSpace())
+        {
+            return;
+        }
+        
+        if (await _openIddictApplicationRepository.FindByClientIdAsync(spaClientId) == null)
+        {
+            var spaClientRootUrl = spaRootUrl.EnsureEndsWith('/');
+            
+            await CreateApplicationAsync(
+                name: spaClientId,
+                type: OpenIddictConstants.ClientTypes.Public,
+                consentType: OpenIddictConstants.ConsentTypes.Explicit,
+                displayName: "MelodyMatch React SPA",
+                secret: null, // SPA clients never use secrets!!!
+                grantTypes: new List<string>
+                {
+                    OpenIddictConstants.GrantTypes.Password,
+                    OpenIddictConstants.GrantTypes.RefreshToken
+                },
+                scopes: new List<string>
+                {
+                    OpenIddictConstants.Permissions.Scopes.Profile,
+                    OpenIddictConstants.Permissions.Scopes.Email,
+                    OpenIddictConstants.Permissions.Scopes.Roles,
+                    "MelodyMatch"
+                },
+                redirectUri: $"{spaClientRootUrl}/auth/callback", // SPA redirect
+                postLogoutRedirectUri: spaClientRootUrl,
+                clientUri: spaClientRootUrl
+            );
+        }
     }
 
     private async Task CreateApplicationAsync(

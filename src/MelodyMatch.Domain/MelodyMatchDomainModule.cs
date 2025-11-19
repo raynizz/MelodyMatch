@@ -65,7 +65,7 @@ public class MelodyMatchDomainModule : AbpModule
         });
         
         context.Services.AddTransient<IdentityUserCreatedHandler>();
-
+    
         Configure<AbpBlobStoringOptions>(options =>
         {
             options.Containers.ConfigureDefault(container =>
