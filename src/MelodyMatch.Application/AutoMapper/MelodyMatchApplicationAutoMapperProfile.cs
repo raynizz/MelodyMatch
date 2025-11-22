@@ -12,6 +12,7 @@ using MelodyMatch.Reaction.DTOs.Responses;
 using MelodyMatch.UserProfile.DTOs.Requests;
 using MelodyMatch.UserProfile.DTOs.Responses;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.Identity;
 
 namespace MelodyMatch.AutoMapper;
 
@@ -26,6 +27,7 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
         MapChats();
         MapMessages();
         MapProfilePhotos();
+        MapIdentityUser();
     }
     
     private void MapUserProfile()
@@ -95,5 +97,15 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
     private void MapProfilePhotos()
     {
         CreateMap<ProfilePhotos.ProfilePhoto, ProfilePhotoResponseDto>();
+    }
+
+    private void MapIdentityUser()
+    {
+        CreateMap<IdentityUserCreateDto, Volo.Abp.Identity.IdentityUser>()
+            .IgnoreAuditedObjectProperties();
+
+        CreateMap<IdentityUserUpdateDto, Volo.Abp.Identity.IdentityUser>()
+            .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
+            .IgnoreAuditedObjectProperties();
     }
 }

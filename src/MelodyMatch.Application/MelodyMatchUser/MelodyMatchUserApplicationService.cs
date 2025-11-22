@@ -78,6 +78,13 @@ public class MelodyMatchUserApplicationService : ApplicationService, IMelodyMatc
         
         return ObjectMapper.Map<Users.MelodyMatchUser, MelodyMatchUserResponseDto>(melodyMatchUser);
     }
+    
+    public async Task<MelodyMatchUserResponseDto> GetByUsernameAsync(string username)
+    {
+        var melodyMatchUser = await _melodyMatchUserRepository.GetByUsernameAsync(username);
+        
+        return ObjectMapper.Map<Users.MelodyMatchUser, MelodyMatchUserResponseDto>(melodyMatchUser);
+    }
 
     public async Task<MelodyMatchUserResponseDto> GetByIdentityUserIdAsync(Guid identityUserId)
     {

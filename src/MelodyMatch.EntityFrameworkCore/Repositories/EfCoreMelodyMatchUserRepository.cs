@@ -39,6 +39,17 @@ public class EfCoreMelodyMatchUserRepository : EfCoreRepository<MelodyMatchDbCon
         return melodyMatchUserToAdd;
     }
     
+    public async Task<MelodyMatchUser> GetByUsernameAsync(string username)
+    {
+        var dbContext = await GetDbContextAsync();
+        
+        return await dbContext
+            .MelodyMatchUsers
+            .Include(x => x.IdentityUser)
+            .Include(x => x.UserProfile)
+            .FirstOrDefaultAsync(x => x.IdentityUser.UserName == username);
+    }
+    
     public async Task<MelodyMatchUser> GetByIdentityUserIdAsync(Guid identityUserId)
     {
         var dbContext = await GetDbContextAsync();

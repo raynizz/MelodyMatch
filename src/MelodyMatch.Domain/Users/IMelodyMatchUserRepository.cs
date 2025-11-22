@@ -13,6 +13,8 @@ public interface IMelodyMatchUserRepository : IRepository<MelodyMatchUser, Guid>
     
     Task<MelodyMatchUser> GetByIdAsync(Guid userId);
     
+    Task<MelodyMatchUser> GetByUsernameAsync(string username);
+    
     Task<MelodyMatchUser> GetByIdentityUserIdAsync(Guid identityUserId);
     
     Task DeleteByIdAsync(Guid userId);
