@@ -7,6 +7,7 @@ using MelodyMatch.Contexts.MelodyMatchUser;
 using MelodyMatch.DTOs.UserProfile.DbRequests;
 using MelodyMatch.Exceptions;
 using MelodyMatch.Extensions;
+using MelodyMatch.Localization;
 using MelodyMatch.Matching.DTOs.Responses;
 using MelodyMatch.Matching.Services;
 using MelodyMatch.Reactions;
@@ -15,6 +16,7 @@ using MelodyMatch.UserProfiles;
 using MelodyMatch.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Volo.Abp.Application.Services;
 
 namespace MelodyMatch.MatchingServices;
@@ -26,17 +28,20 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
     private readonly IReactionRepository _reactionRepository;
     private readonly IShownUserProfileRepository _shownUserRepository;
     private readonly ICurrentMelodyMatchUser _currentMelodyMatchUser;
+    private readonly IStringLocalizer<MelodyMatchResource> _localizer;
     
     public RecommendationApplicationService(
         IUserProfileRepository userProfileRepository,
         IReactionRepository reactionRepository,
         IShownUserProfileRepository shownUserRepository,
-        ICurrentMelodyMatchUser currentMelodyMatchUser)
+        ICurrentMelodyMatchUser currentMelodyMatchUser,
+        IStringLocalizer<MelodyMatchResource> localizer)
     {
         _userProfileRepository = userProfileRepository;
         _reactionRepository = reactionRepository;
         _shownUserRepository = shownUserRepository;
         _currentMelodyMatchUser = currentMelodyMatchUser;
+        _localizer = localizer;
     }
 
 
@@ -76,7 +81,6 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
             .Select(x => x.Profile)
             .ToList();
 
-        //TODO: add localization for Interests.GetDescription()
         return scored.Select(p => new SuggestedUserResponseDto
         {
             MelodyMatchUserId = p.MelodyMatchUserId,
@@ -85,8 +89,8 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
             Location = p.Location,
             Bio = p.Bio,
             PhotosUrls = p.ProfilePhotos?.Select(x => x.Url)?.ToList(),
-            Interests = p.Interests?.Select(i => i.GetDescription()).ToList(),
-            Gender = p.MelodyMatchUser.Gender.GetDescription()
+            Interests = p.Interests?.Select(i => i.GetLocalizedDescription(_localizer)).ToList(),
+            Gender = p.MelodyMatchUser.Gender.GetLocalizedDescription(_localizer)
         }).ToList();
     }
 

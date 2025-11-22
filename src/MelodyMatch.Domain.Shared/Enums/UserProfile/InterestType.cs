@@ -4,57 +4,66 @@ namespace MelodyMatch.Enums.UserProfile;
 
 public enum InterestType
 {
-    [Description("Poetry")]
-    Poetry = 1,
+    [Description("Rock")]
+    Rock,
     
-    [Description("Art")]
-    Art = 2,
+    [Description("Pop")]
+    Pop,
     
-    [Description("Travel")]
-    Travel = 3,
+    [Description("Jazz")]
+    Jazz,
     
-    [Description("Sports")]
-    Sports = 4,
+    [Description("Classical")]
+    Classical,
     
-    [Description("Cooking")]
-    Cooking = 5,
+    [Description("Hip Hop")]
+    HipHop,
     
-    [Description("Technology")]
-    Technology = 6,
+    [Description("Electronic")]
+    Electronic,
     
-    [Description("Music")]
-    Music = 7,
+    [Description("Country")]
+    Country,
     
-    [Description("Movies")]
-    Movies = 8,
+    [Description("Reggae")]
+    Reggae,
     
-    [Description("Reading")]
-    Reading = 9,
+    [Description("Metal")]
+    Metal,
     
-    [Description("Gaming")]
-    Gaming = 10,
+    [Description("Folk")]
+    Folk,
     
-    [Description("Fitness")]
-    Fitness = 11,
+    [Description("Blues")]
+    Blues,
     
-    [Description("Nature")]
-    Nature = 12,
+    [Description("R&B")]
+    RnB,
     
-    [Description("Photography")]
-    Photography = 13,
+    [Description("Indie")]
+    Indie,
     
-    [Description("Fashion")]
-    Fashion = 14,
+    [Description("Alternative")]
+    Alternative,
     
-    [Description("Dance")]
-    Dance = 15,
+    [Description("Funk")]
+    Funk,
     
-    [Description("Theater")]
-    Theater = 16,
+    [Description("Disco")]
+    Disco,
     
-    [Description("Volunteering")]
-    Volunteering = 17,
+    [Description("Gospel")]
+    Gospel,
     
-    [Description("Meditation")]
-    Meditation = 18,
+    [Description("Ska")]
+    Ska,
+    
+    [Description("Punk")]
+    Punk,
+    
+    [Description("Soul")]
+    Soul,
+    
+    [Description("Ambient")]
+    Ambient
 }
