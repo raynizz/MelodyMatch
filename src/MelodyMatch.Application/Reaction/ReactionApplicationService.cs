@@ -21,7 +21,7 @@ using Volo.Abp.EventBus.Local;
 
 namespace MelodyMatch.Reaction;
 
-// [Authorize(Roles = RolesConsts.Dater)]
+[Authorize(Roles = RolesConsts.Dater)]
 public class ReactionApplicationService : ApplicationService, IReactionApplicationService
 {
     private readonly IReactionRepository _reactionRepository;
