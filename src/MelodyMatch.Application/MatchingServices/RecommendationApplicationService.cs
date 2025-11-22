@@ -55,15 +55,15 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
             throw new NotFoundException(MelodyMatchDomainErrorCodes.UserProfile.UserProfileNotFilled);
         }
 
-        var reactedIds = await _reactionRepository.GetReactedUserIdsAsync(currentUserId);
+        // var reactedIds = await _reactionRepository.GetReactedUserIdsAsync(currentUserId);
         var shownIds = await _shownUserRepository.GetRecentlyShownUserIdsAsync(currentUserId, 3);
 
-        var excludedIds = reactedIds.Concat(shownIds).Distinct().ToList();
+        // var excludedIds = reactedIds.Concat(shownIds).Distinct().ToList();
 
         var candidates = await _userProfileRepository.GetCandidatesForUserAsync(new GetUserProfilesDbRequestDto(
             currentUserId,
             currentProfile.Location,
-            excludedIds,
+            shownIds,
             currentProfile.MelodyMatchUser.Gender,
             currentProfile.PreferredGenders,
             currentProfile.Age,

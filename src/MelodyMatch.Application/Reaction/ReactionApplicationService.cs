@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MelodyMatch.Constants;
+using MelodyMatch.Enums.Reactions;
 using MelodyMatch.Extensions;
+using MelodyMatch.Matches.Events;
 using MelodyMatch.Reaction.DTOs.Requests;
 using MelodyMatch.Reaction.DTOs.Responses;
 using MelodyMatch.Reaction.Filters;
@@ -14,21 +16,26 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Domain.Repositories;
+using Volo.Abp.EventBus.Local;
 
 namespace MelodyMatch.Reaction;
 
-[Authorize(Roles = RolesConsts.Dater)]
+// [Authorize(Roles = RolesConsts.Dater)]
 public class ReactionApplicationService : ApplicationService, IReactionApplicationService
 {
     private readonly IReactionRepository _reactionRepository;
     private readonly IShownUserProfileRepository _shownUserRepository;
+    private readonly ILocalEventBus _localEventBus;
 
     public ReactionApplicationService(
         IReactionRepository reactionRepository,
-        IShownUserProfileRepository shownUserRepository)
+        IShownUserProfileRepository shownUserRepository,
+        ILocalEventBus localEventBus)
     {
         _reactionRepository = reactionRepository;
         _shownUserRepository = shownUserRepository;
+        _localEventBus = localEventBus;
     }
     
     public async Task<PagedResultDto<ReactionResponseDto>> GetListAsync(ReactionFilter filter)
@@ -68,6 +75,40 @@ public class ReactionApplicationService : ApplicationService, IReactionApplicati
         if (!await _shownUserRepository.IsUserShown(request.FromUserId, request.ToUserId))
         {
             await _shownUserRepository.AddShownUserAsync(request.FromUserId, request.ToUserId);
+        }
+        
+        if(reaction.Type is ReactionType.Like or ReactionType.LikeWithMessage)
+        {
+            var oppositeLike = await _reactionRepository.FindAsync(r => 
+                r.FromUserId == request.ToUserId && 
+                r.ToUserId == request.FromUserId && 
+                (r.Type == ReactionType.Like || r.Type == ReactionType.LikeWithMessage));
+            
+            if (oppositeLike != null)
+            {
+                string? firstMessage;
+                Guid? firstMessageSenderId;
+
+                if (oppositeLike.Type == ReactionType.LikeWithMessage)
+                {
+                    firstMessage = oppositeLike.Message;
+                    firstMessageSenderId = request.ToUserId;
+                }
+                else
+                {
+                    firstMessage = request.Message;
+                    firstMessageSenderId = request.FromUserId;
+                }
+                
+                var evt = new MutualLikeCreatedEvent(
+                    userAId: reaction.FromUserId,
+                    userBId: reaction.ToUserId,
+                    firstMessage: firstMessage,
+                    firstMessageSenderId: firstMessageSenderId
+                );
+
+                await _localEventBus.PublishAsync(evt);
+            }
         }
         
         return ObjectMapper.Map<Reactions.Reaction, ReactionResponseDto>(createdReaction);
