@@ -17,6 +17,8 @@ public interface IMelodyMatchUserApplicationService : IApplicationService
     Task<PagedResultDto<MelodyMatchUserResponseDto>> GetListAsync(MelodyMatchUserFilter filter);
     
     Task<MelodyMatchUserResponseDto> GetByIdAsync(Guid id);
+
+    Task<MelodyMatchUserResponseDto> GetByUsernameAsync(string username);
     
     Task<MelodyMatchUserResponseDto> GetByIdentityUserIdAsync(Guid identityUserId);
     

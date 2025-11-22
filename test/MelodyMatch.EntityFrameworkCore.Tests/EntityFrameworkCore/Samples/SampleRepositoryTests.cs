@@ -17,11 +17,11 @@ namespace MelodyMatch.EntityFrameworkCore.Samples;
 [Collection(MelodyMatchTestConsts.CollectionDefinitionName)]
 public class SampleRepositoryTests : MelodyMatchEntityFrameworkCoreTestBase
 {
-    private readonly IRepository<IdentityUser, Guid> _appUserRepository;
+    private readonly IRepository<Volo.Abp.Identity.IdentityUser, Guid> _appUserRepository;
 
     public SampleRepositoryTests()
     {
-        _appUserRepository = GetRequiredService<IRepository<IdentityUser, Guid>>();
+        _appUserRepository = GetRequiredService<IRepository<Volo.Abp.Identity.IdentityUser, Guid>>();
     }
 
     [Fact]

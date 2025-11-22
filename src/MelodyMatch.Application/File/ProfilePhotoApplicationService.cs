@@ -74,7 +74,6 @@ public class ProfilePhotoApplicationService : ApplicationService, IProfilePhotoA
         return ObjectMapper.Map<ProfilePhotos.ProfilePhoto, ProfilePhotoResponseDto>(photo);
     }
 
-    [Authorize(Roles = RolesConsts.Admin)]
     public async Task DeleteAsync(Guid id)
     {
         var photo = await _repository.GetAsync(id);
