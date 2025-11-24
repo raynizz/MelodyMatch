@@ -8,4 +8,6 @@ namespace MelodyMatch.Matching.Services;
 public interface IRecommendationApplicationService : IApplicationService
 {
     Task<List<SuggestedUserResponseDto>> GetSuggestionsForCurrentUserAsync(int? take = 10);
+
+    Task<List<SuggestedUserResponseDto>> GetLikeCurrentProfileUsers(int? take = 10);
 }

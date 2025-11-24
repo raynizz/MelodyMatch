@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MelodyMatch.Constants;
 using MelodyMatch.Contexts.MelodyMatchUser;
 using MelodyMatch.DTOs.UserProfile.DbRequests;
+using MelodyMatch.Enums.Reactions;
 using MelodyMatch.Exceptions;
 using MelodyMatch.Extensions;
 using MelodyMatch.Localization;
@@ -55,15 +56,16 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
             throw new NotFoundException(MelodyMatchDomainErrorCodes.UserProfile.UserProfileNotFilled);
         }
 
-        // var reactedIds = await _reactionRepository.GetReactedUserIdsAsync(currentUserId);
+        var reportedIds = await _reactionRepository.GetReactedUserIdsAsync(currentUserId, ReactionType.Report);
+        var oppositeLikedIds = await _reactionRepository.GetLikerUserIdsForCurrentUserAsync(currentUserId);
         var shownIds = await _shownUserRepository.GetRecentlyShownUserIdsAsync(currentUserId, 3);
 
-        // var excludedIds = reactedIds.Concat(shownIds).Distinct().ToList();
+        var excludedIds = reportedIds.Concat(shownIds).Concat(oppositeLikedIds).Distinct().ToList();
 
         var candidates = await _userProfileRepository.GetCandidatesForUserAsync(new GetUserProfilesDbRequestDto(
             currentUserId,
             currentProfile.Location,
-            shownIds,
+            excludedIds,
             currentProfile.MelodyMatchUser.Gender,
             currentProfile.PreferredGenders,
             currentProfile.Age,
@@ -92,6 +94,34 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
             Interests = p.Interests?.Select(i => i.GetLocalizedDescription(_localizer)).ToList(),
             Gender = p.MelodyMatchUser.Gender.GetLocalizedDescription(_localizer)
         }).ToList();
+    }
+
+    public async Task<List<SuggestedUserResponseDto>> GetLikeCurrentProfileUsers(int? take = 10)
+    {
+        var currentUserId = await _currentMelodyMatchUser.GetIdAsync();
+
+        var currentProfile = await _userProfileRepository.GetByMelodyMatchUserIdAsync(currentUserId);
+        if (currentProfile == null)
+        {
+            throw new NotFoundException(MelodyMatchDomainErrorCodes.UserProfile.UserProfileNotFilled);
+        }
+        
+        var likesForCurrentUser = await _reactionRepository.GetLikesForCurrentUserAsync(currentUserId);
+        
+        return likesForCurrentUser.Select(p => new SuggestedUserResponseDto
+        {
+            MelodyMatchUserId = p.FromUserId,
+            Name = p.FromUser.IdentityUser.Name,
+            Age = p.FromUser.UserProfile.Age,
+            Location = p.FromUser.UserProfile.Location,
+            Bio = p.FromUser.UserProfile.Bio,
+            PhotosUrls = p.FromUser.UserProfile.ProfilePhotos?.Select(x => x.Url)?.ToList(),
+            Interests = p.FromUser.UserProfile.Interests?.Select(i => i.GetLocalizedDescription(_localizer)).ToList(),
+            Gender = p.FromUser.Gender.GetLocalizedDescription(_localizer),
+            Message = p.Type == ReactionType.LikeWithMessage ? p.Message : string.Empty
+        })
+            .Take(take ?? 10)
+            .ToList();
     }
 
     private double ComputeCompatibilityScore(UserProfiles.UserProfile current, UserProfiles.UserProfile other)
