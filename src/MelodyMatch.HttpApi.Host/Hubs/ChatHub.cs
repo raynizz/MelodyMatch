@@ -134,6 +134,40 @@ public class ChatHub : Hub, ITransientDependency
         await SendMessageToUsers(otherUserIds, "UserStoppedTyping", new { ChatId = chatId, UserId = currentUserId });
     }
     
+    public async Task UpdateMessage(UpdateMessageRequestDto request)
+    {
+        var currentUserId = await _currentMelodyMatchUser.GetIdAsync();
+        
+        if (!await _chatParticipantRepository.ExistsInChatAsync(request.ChatId, currentUserId))
+        {
+            throw new UnauthorizedAccessException("You are not a participant of this chat.");
+        }
+
+        var updatedMessage = await _messageApplicationService.UpdateMessageAsync(request);
+
+        var participants = await _chatParticipantRepository.GetByChatIdAsync(request.ChatId);
+        var allUserIds = participants.Select(p => p.UserId).ToList();
+
+        await SendMessageToUsers(allUserIds, "MessageUpdated", updatedMessage);
+    }
+    
+    public async Task DeleteMessage(Guid messageId, Guid chatId)
+    {
+        var currentUserId = await _currentMelodyMatchUser.GetIdAsync();
+        
+        if (!await _chatParticipantRepository.ExistsInChatAsync(chatId, currentUserId))
+        {
+            throw new UnauthorizedAccessException("You are not a participant of this chat.");
+        }
+
+        await _messageApplicationService.DeleteMessageAsync(messageId);
+
+        var participants = await _chatParticipantRepository.GetByChatIdAsync(chatId);
+        var allUserIds = participants.Select(p => p.UserId).ToList();
+
+        await SendMessageToUsers(allUserIds, "MessageDeleted", new { MessageId = messageId, ChatId = chatId });
+    }
+    
     private async Task SendMessageToUsers(List<Guid> userIds, string method, object data)
     {
         var connectionIds = new List<string>();

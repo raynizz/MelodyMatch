@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -81,5 +82,12 @@ public class ChatApplicationService : ApplicationService, IChatApplicationServic
         await _chatRepository.InsertAsync(chat, autoSave: true);
 
         return ObjectMapper.Map<Chats.Chat, ChatResponseDto>(chat);
+    }
+    
+    public async Task DeleteChatAsync(Guid chatId)
+    {
+        var chat = await _chatRepository.GetAsync(chatId);
+        
+        await _chatRepository.DeleteAsync(chat, autoSave: true);
     }
 }

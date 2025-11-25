@@ -16,4 +16,6 @@ public interface IMessageApplicationService : IApplicationService
     Task<List<MessageResponseDto>> GetUnreadMessagesAsync();
     
     Task<MessageResponseDto> UpdateMessageAsync(UpdateMessageRequestDto request);
+    
+    Task DeleteMessageAsync(Guid messageId);
 }

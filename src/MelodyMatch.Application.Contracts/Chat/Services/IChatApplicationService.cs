@@ -13,4 +13,6 @@ public interface IChatApplicationService
     Task<ChatResponseDto> GetChatAsync(Guid chatId);
     
     Task<ChatResponseDto> CreateChatAsync(CreateChatRequestDto request);
+
+    Task DeleteChatAsync(Guid chatId);
 }

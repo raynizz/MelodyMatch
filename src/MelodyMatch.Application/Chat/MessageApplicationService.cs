@@ -9,7 +9,6 @@ using MelodyMatch.Constants;
 using MelodyMatch.Contexts.MelodyMatchUser;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Users;
 
 namespace MelodyMatch.Chat;
 
@@ -71,10 +70,15 @@ public class MessageApplicationService: ApplicationService, IMessageApplicationS
             throw new UnauthorizedAccessException("You can only update your own messages.");
         }
         
-        ObjectMapper.Map(request, message);
+        message.Content = request.Content;
+        message.IsRead = request.IsRead;
+        
         await _messageRepository.UpdateAsync(message, autoSave: true);
 
-        return ObjectMapper.Map<Message, MessageResponseDto>(message);
+        // Отримати оновлене повідомлення з відправником для відповіді
+        var updatedMessage = await _messageRepository.GetByIdWithSenderAsync(request.Id);
+        
+        return ObjectMapper.Map<Message, MessageResponseDto>(updatedMessage);
     }
 
     public async Task DeleteMessageAsync(Guid messageId)

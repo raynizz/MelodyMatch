@@ -7,6 +7,8 @@ namespace MelodyMatch.Chats;
 
 public interface IMessageRepository : IRepository<Message, Guid>
 {
+    Task<Message?> GetByIdWithSenderAsync(Guid id);
+    
     Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId);
     
     Task<List<Message>> GetUnreadMessagesAsync(Guid userId);

@@ -17,6 +17,16 @@ public class EfCoreMessageRepository : EfCoreRepository<MelodyMatchDbContext, Me
     {
     }
 
+    public async Task<Message?> GetByIdWithSenderAsync(Guid id)
+    {
+        var dbContext = await GetDbContextAsync();
+        
+        return await dbContext.Messages
+            .Include(m => m.Sender)
+            .ThenInclude(u => u.IdentityUser)
+            .FirstOrDefaultAsync(m => m.Id == id);
+    }
+
     public async Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId)
     {
         var dbContext = await GetDbContextAsync();
