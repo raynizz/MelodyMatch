@@ -17,13 +17,23 @@ public class EfCoreMessageRepository : EfCoreRepository<MelodyMatchDbContext, Me
     {
     }
 
+    public async Task<Message?> GetByIdWithSenderAsync(Guid id)
+    {
+        var dbContext = await GetDbContextAsync();
+        
+        return await dbContext.Messages
+            .Include(m => m.Sender)
+            .ThenInclude(u => u.IdentityUser)
+            .FirstOrDefaultAsync(m => m.Id == id);
+    }
+
     public async Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId)
     {
         var dbContext = await GetDbContextAsync();
         
         return await dbContext.Messages
             .Where(m => m.ChatId == chatId)
-            .OrderByDescending(m => m.CreationTime)
+            .OrderBy(m => m.CreationTime)
             .Include(m => m.Sender)
             .ThenInclude(u => u.IdentityUser)
             .ToListAsync();
@@ -41,5 +51,21 @@ public class EfCoreMessageRepository : EfCoreRepository<MelodyMatchDbContext, Me
             .Where(m => m.SenderId != userId)
             .Where(m => !m.IsRead && m.Chat.Participants.Any(p => p.UserId == userId))
             .ToListAsync();
+    }
+
+    public async Task MarkMessagesAsReadAsync(List<Guid> messageIds, Guid userId)
+    {
+        var dbContext = await GetDbContextAsync();
+        
+        var messages = await dbContext.Messages
+            .Where(m => messageIds.Contains(m.Id) && m.SenderId != userId)
+            .ToListAsync();
+        
+        foreach (var message in messages)
+        {
+            message.IsRead = true;
+        }
+        
+        await dbContext.SaveChangesAsync();
     }
 }

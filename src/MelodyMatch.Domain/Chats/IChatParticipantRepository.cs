@@ -8,5 +8,8 @@ namespace MelodyMatch.Chats;
 public interface IChatParticipantRepository : IRepository<ChatParticipant>
 {
     Task<List<ChatParticipant>> GetByUserIdAsync(Guid userId);
+    
     Task<bool> ExistsInChatAsync(Guid chatId, Guid userId);
+    
+    Task<List<ChatParticipant>> GetByChatIdAsync(Guid chatId);
 }

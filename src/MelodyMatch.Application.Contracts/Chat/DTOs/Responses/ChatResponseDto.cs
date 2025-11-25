@@ -10,4 +10,8 @@ public class ChatResponseDto : FullAuditedEntityDto<Guid>
     public List<MelodyMatchUserResponseDto> Participants { get; set; } = new();
     
     public List<MessageResponseDto> Messages { get; set; } = new();
+    
+    public MessageResponseDto? LastMessage { get; set; }
+    
+    public int UnreadCount { get; set; }
 }

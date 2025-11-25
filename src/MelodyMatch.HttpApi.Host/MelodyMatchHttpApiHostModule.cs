@@ -68,6 +68,7 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         ConfigureSwaggerServices(context, configuration);
         ConfigureLocalization();
         ConfigureElmah(context);
+        ConfigureSignalR(context);
         
         Configure<AbpMvcLibsOptions>(options =>
         {
@@ -149,6 +150,18 @@ public class MelodyMatchHttpApiHostModule : AbpModule
                 
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = async context =>
                     {
                         await HandleTokenValidated(context, configuration);
@@ -237,6 +250,11 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         });
     }
 
+    private void ConfigureSignalR(ServiceConfigurationContext context)
+    {
+        context.Services.AddSignalR();
+    }
+
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
@@ -299,6 +317,9 @@ public class MelodyMatchHttpApiHostModule : AbpModule
 
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
-        app.UseConfiguredEndpoints();
+        app.UseConfiguredEndpoints(endpoints =>
+        {
+            endpoints.MapHub<Hubs.ChatHub>("/hubs/chat");
+        });
     }
 }
