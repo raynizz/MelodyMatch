@@ -34,4 +34,13 @@ public class EfCoreChatParticipantRepository : EfCoreRepository<MelodyMatchDbCon
         return await dbContext.ChatParticipants
             .AnyAsync(x => x.ChatId == chatId && x.UserId == userId);
     }
+
+    public async Task<List<ChatParticipant>> GetByChatIdAsync(Guid chatId)
+    {
+        var dbContext = await GetDbContextAsync();
+        
+        return await dbContext.ChatParticipants
+            .Where(x => x.ChatId == chatId)
+            .ToListAsync();
+    }
 }

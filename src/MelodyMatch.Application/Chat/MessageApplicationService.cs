@@ -49,7 +49,6 @@ public class MessageApplicationService: ApplicationService, IMessageApplicationS
     {
         var currentUserId = await _currentMelodyMatchUser.GetIdAsync();
 
-        // TODO: Publish MessageSentEvent when SignalR integration is ready
         // TODO: Add custom exception for unauthorized access
         if (!await _chatParticipantRepository.ExistsInChatAsync(request.ChatId, currentUserId))
         {

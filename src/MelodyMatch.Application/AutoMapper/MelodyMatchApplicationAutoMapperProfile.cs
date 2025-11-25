@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿﻿using System.Linq;
 using AutoMapper;
 using MelodyMatch.Chat.DTOs.Requests;
 using MelodyMatch.Chat.DTOs.Responses;
@@ -77,7 +77,9 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
     private void MapChats()
     {
         CreateMap<Chats.Chat, ChatResponseDto>()
-            .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants.Select(p => p.User)));
+            .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants.Select(p => p.User)))
+            .ForMember(dest => dest.LastMessage, opt => opt.MapFrom(src => src.Messages.OrderByDescending(m => m.CreationTime).FirstOrDefault()))
+            .ForMember(dest => dest.UnreadCount, opt => opt.Ignore()); // Will be set manually in the service
         
         CreateMap<CreateChatRequestDto, Chats.Chat>()
             .IgnoreAuditedObjectProperties();

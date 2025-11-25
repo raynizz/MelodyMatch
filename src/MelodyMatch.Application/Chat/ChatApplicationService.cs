@@ -45,9 +45,15 @@ public class ChatApplicationService : ApplicationService, IChatApplicationServic
             .Take(input.MaxResultCount)
             .ToList();
 
-        return new PagedResultDto<ChatResponseDto>(
-            totalCount,
-            ObjectMapper.Map<List<Chats.Chat>, List<ChatResponseDto>>(chats));
+        var chatDtos = ObjectMapper.Map<List<Chats.Chat>, List<ChatResponseDto>>(chats);
+        
+        foreach (var chatDto in chatDtos)
+        {
+            var chat = chats.First(c => c.Id == chatDto.Id);
+            chatDto.UnreadCount = chat.Messages.Count(m => m.SenderId != userId && !m.IsRead);
+        }
+
+        return new PagedResultDto<ChatResponseDto>(totalCount, chatDtos);
     }
     
     public async Task<ChatResponseDto> GetChatAsync(System.Guid chatId)

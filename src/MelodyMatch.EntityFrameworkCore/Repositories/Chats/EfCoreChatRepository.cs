@@ -34,6 +34,7 @@ public class EfCoreChatRepository : EfCoreRepository<MelodyMatchDbContext, Chat,
         var dbContext = await GetDbContextAsync();
 
         return await dbContext.Chats
+            .Include(c => c.Messages)
             .Include(c => c.Participants)
             .ThenInclude(p => p.User)
             .ThenInclude(p => p.IdentityUser)
