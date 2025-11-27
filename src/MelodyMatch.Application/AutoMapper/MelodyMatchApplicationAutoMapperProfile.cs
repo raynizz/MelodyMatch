@@ -1,4 +1,4 @@
-﻿﻿using System.Linq;
+﻿﻿﻿using System.Linq;
 using AutoMapper;
 using MelodyMatch.Chat.DTOs.Requests;
 using MelodyMatch.Chat.DTOs.Responses;
@@ -6,6 +6,7 @@ using MelodyMatch.Complaint.DTOs.Requests;
 using MelodyMatch.Complaint.DTOs.Responses;
 using MelodyMatch.MelodyMatchUser.DTOs.Requests;
 using MelodyMatch.MelodyMatchUser.DTOs.Responses;
+using MelodyMatch.Notification.DTOs.Responses;
 using MelodyMatch.ProfilePhoto.DTOs.Responses;
 using MelodyMatch.Reaction.DTOs.Requests;
 using MelodyMatch.Reaction.DTOs.Responses;
@@ -28,6 +29,7 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
         MapMessages();
         MapProfilePhotos();
         MapIdentityUser();
+        MapNotifications();
     }
     
     private void MapUserProfile()
@@ -109,5 +111,10 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
         CreateMap<IdentityUserUpdateDto, Volo.Abp.Identity.IdentityUser>()
             .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
             .IgnoreAuditedObjectProperties();
+    }
+    
+    private void MapNotifications()
+    {
+        CreateMap<Notifications.Notification, NotificationResponseDto>();
     }
 }

@@ -293,6 +293,8 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         app.UseCors();
         app.UseAuthentication();
 
+        app.UseMiddleware<Authentication.BanCheckMiddleware>();
+        
         app.UseUnitOfWork();
         app.UseDynamicClaims();
         app.UseAuthorization();
@@ -320,6 +322,7 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         app.UseConfiguredEndpoints(endpoints =>
         {
             endpoints.MapHub<Hubs.ChatHub>("/hubs/chat");
+            endpoints.MapHub<Hubs.NotificationHub>("/hubs/notification");
         });
     }
 }
