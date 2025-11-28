@@ -57,7 +57,10 @@ public class MessageApplicationService: ApplicationService, IMessageApplicationS
         var message = new Message(currentUserId, request.Content, false, request.ChatId);
 
         await _messageRepository.InsertAsync(message, autoSave: true);
-        return ObjectMapper.Map<Message, MessageResponseDto>(message);
+        
+        var messageWithSender = await _messageRepository.GetByIdWithSenderAsync(message.Id);
+        
+        return ObjectMapper.Map<Message, MessageResponseDto>(messageWithSender);
     }
     
     public async Task<MessageResponseDto> UpdateMessageAsync(UpdateMessageRequestDto request)
@@ -75,7 +78,6 @@ public class MessageApplicationService: ApplicationService, IMessageApplicationS
         
         await _messageRepository.UpdateAsync(message, autoSave: true);
 
-        // Отримати оновлене повідомлення з відправником для відповіді
         var updatedMessage = await _messageRepository.GetByIdWithSenderAsync(request.Id);
         
         return ObjectMapper.Map<Message, MessageResponseDto>(updatedMessage);

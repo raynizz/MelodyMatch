@@ -11,4 +11,6 @@ public class MessageResponseDto : FullAuditedEntityDto<Guid>
     public string Content { get; set; } = default!;
     
     public bool IsRead { get; set; }
+    
+    public Guid ChatId { get; set; }
 }
