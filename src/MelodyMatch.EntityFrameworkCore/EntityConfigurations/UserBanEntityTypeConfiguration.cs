@@ -40,4 +40,3 @@ public class UserBanEntityTypeConfiguration : IEntityTypeConfiguration<UserBan>
         builder.HasIndex(x => new { x.UserId, x.IsActive });
     }
 }
-

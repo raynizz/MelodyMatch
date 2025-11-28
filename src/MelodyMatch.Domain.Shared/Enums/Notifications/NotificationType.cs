@@ -14,6 +14,9 @@ public enum NotificationType
     UserBanned = 2,
     
     [Description("General")]
-    General = 3
+    General = 3,
+    
+    [Description("Complaint Received")]
+    ComplaintReceived = 4
 }
 

@@ -29,12 +29,23 @@ public class EfCoreComplaintRepository :  EfCoreRepository<MelodyMatchDbContext,
     {
         var dbContext = await GetDbContextAsync();
         
-        return await dbContext.Complaints
+        var complaint = await dbContext.Complaints
             .Include(x => x.ReportedUser)
                 .ThenInclude(x => x.UserProfile)
+                    .ThenInclude(x => x.ProfilePhotos!)
+            .Include(x => x.ReportedUser)
+                .ThenInclude(x => x.IdentityUser)
             .Include(x => x.Reporter)
                 .ThenInclude(x => x.UserProfile)
+            .Include(x => x.Reporter)
+                .ThenInclude(x => x.IdentityUser)
             .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
         
+        if (complaint == null)
+        {
+            throw new Volo.Abp.UserFriendlyException("Complaint not found");
+        }
+        
+        return complaint;
     }
 }

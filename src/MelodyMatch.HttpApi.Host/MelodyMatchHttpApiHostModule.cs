@@ -195,7 +195,6 @@ public class MelodyMatchHttpApiHostModule : AbpModule
             }
 
             email = emailClaim.Value;
-            // check not null and that is a valid email address
             if (!string.IsNullOrWhiteSpace(email) && email.Contains("@"))
             {
                 break;
@@ -210,6 +209,18 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         {
             return;
         }
+        
+        var userBanRepository = context.HttpContext.RequestServices.GetService<Users.IUserBanRepository>();
+        if (userBanRepository != null)
+        {
+            var isBanned = await userBanRepository.IsUserBannedAsync(webUser.Id);
+            if (isBanned)
+            {
+                context.Fail("\nYour account has been blocked. Please contact the administration for more information.");
+                return;
+            }
+        }
+        
         var appIdentity = new ClaimsIdentity(new List<Claim> { new Claim("UserInfoDto", JsonSerializer.Serialize(webUser)) });
         context.Principal?.AddIdentity(appIdentity);
     }

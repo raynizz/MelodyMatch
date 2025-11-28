@@ -96,5 +96,19 @@ public class UserBanService : DomainService
         
         return await _notificationRepository.InsertAsync(notification);
     }
+    
+    public async Task UnbanUserAsync(Guid userId, string? reason = null)
+    {
+        var dbSet = await _userBanRepository.GetQueryableAsync();
+        var activeBans = dbSet
+            .Where(x => x.UserId == userId && x.IsActive && !x.IsDeleted)
+            .ToList();
+        
+        foreach (var ban in activeBans)
+        {
+            ban.IsActive = false;
+            await _userBanRepository.UpdateAsync(ban);
+        }
+    }
 }
 
