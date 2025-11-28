@@ -39,22 +39,30 @@ public class ChatHub : Hub, ITransientDependency
     {
         var userId = await _currentMelodyMatchUser.GetIdAsync();
         
+        bool wasOffline = false;
         lock (Lock)
         {
             if (!UserConnections.ContainsKey(userId))
             {
                 UserConnections[userId] = new List<string>();
+                wasOffline = true;
             }
             UserConnections[userId].Add(Context.ConnectionId);
         }
 
         await base.OnConnectedAsync();
+        
+        if (wasOffline)
+        {
+            await Clients.All.SendAsync("UserOnline", userId);
+        }
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userId = await _currentMelodyMatchUser.GetIdAsync();
         
+        bool isNowOffline = false;
         lock (Lock)
         {
             if (UserConnections.ContainsKey(userId))
@@ -63,11 +71,37 @@ public class ChatHub : Hub, ITransientDependency
                 if (UserConnections[userId].Count == 0)
                 {
                     UserConnections.Remove(userId);
+                    isNowOffline = true;
                 }
             }
         }
 
         await base.OnDisconnectedAsync(exception);
+        
+        if (isNowOffline)
+        {
+            await Clients.All.SendAsync("UserOffline", userId);
+        }
+    }
+    
+    public Task<List<Guid>> GetOnlineUsers()
+    {
+        List<Guid> onlineUsers;
+        lock (Lock)
+        {
+            onlineUsers = UserConnections.Keys.ToList();
+        }
+        return Task.FromResult(onlineUsers);
+    }
+    
+    public Task<bool> IsUserOnline(Guid userId)
+    {
+        bool isOnline;
+        lock (Lock)
+        {
+            isOnline = UserConnections.ContainsKey(userId);
+        }
+        return Task.FromResult(isOnline);
     }
     
     public async Task SendMessage(CreateMessageRequestDto request)
@@ -82,9 +116,9 @@ public class ChatHub : Hub, ITransientDependency
         var message = await _messageApplicationService.SendMessageAsync(request);
 
         var participants = await _chatParticipantRepository.GetByChatIdAsync(request.ChatId);
-        var recipientIds = participants.Where(p => p.UserId != currentUserId).Select(p => p.UserId).ToList();
+        var allUserIds = participants.Select(p => p.UserId).ToList();
 
-        await SendMessageToUsers(recipientIds, "ReceiveMessage", message);
+        await SendMessageToUsers(allUserIds, "ReceiveMessage", message);
     }
     
     public async Task MarkMessagesAsRead(Guid chatId, List<Guid> messageIds)
