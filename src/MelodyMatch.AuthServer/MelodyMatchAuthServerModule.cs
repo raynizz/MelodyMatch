@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Localization.Resources.AbpUi;
+using MelodyMatch.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,7 +48,6 @@ public class MelodyMatchAuthServerModule : AbpModule
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
-        var configuration = context.Services.GetConfiguration();
 
         PreConfigure<OpenIddictBuilder>(builder =>
         {
@@ -57,6 +57,11 @@ public class MelodyMatchAuthServerModule : AbpModule
                 options.UseLocalServer();
                 options.UseAspNetCore();
             });
+        });
+        
+        PreConfigure<OpenIddictServerBuilder>(builder =>
+        {
+            builder.AddEventHandler(BannedUserValidationHandler.Descriptor);
         });
 
         if (!hostingEnvironment.IsDevelopment())

@@ -30,19 +30,22 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
     private readonly IShownUserProfileRepository _shownUserRepository;
     private readonly ICurrentMelodyMatchUser _currentMelodyMatchUser;
     private readonly IStringLocalizer<MelodyMatchResource> _localizer;
+    private readonly IUserBanRepository _userBanRepository;
     
     public RecommendationApplicationService(
         IUserProfileRepository userProfileRepository,
         IReactionRepository reactionRepository,
         IShownUserProfileRepository shownUserRepository,
         ICurrentMelodyMatchUser currentMelodyMatchUser,
-        IStringLocalizer<MelodyMatchResource> localizer)
+        IStringLocalizer<MelodyMatchResource> localizer,
+        IUserBanRepository userBanRepository)
     {
         _userProfileRepository = userProfileRepository;
         _reactionRepository = reactionRepository;
         _shownUserRepository = shownUserRepository;
         _currentMelodyMatchUser = currentMelodyMatchUser;
         _localizer = localizer;
+        _userBanRepository = userBanRepository;
     }
 
 
@@ -60,7 +63,18 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
         var oppositeLikedIds = await _reactionRepository.GetLikerUserIdsForCurrentUserAsync(currentUserId);
         var shownIds = await _shownUserRepository.GetRecentlyShownUserIdsAsync(currentUserId, 3);
 
-        var excludedIds = reportedIds.Concat(shownIds).Concat(oppositeLikedIds).Distinct().ToList();
+        // Get all banned user IDs
+        var bannedUsersQuery = await _userBanRepository.GetQueryableAsync();
+        var now = DateTime.UtcNow;
+        var bannedUserIds = await AsyncExecuter.ToListAsync(
+            bannedUsersQuery
+                .Where(x => x.IsActive && 
+                           !x.IsDeleted &&
+                           (x.IsPermanent || x.ExpiresAt == null || x.ExpiresAt > now))
+                .Select(x => x.UserId)
+        );
+
+        var excludedIds = reportedIds.Concat(shownIds).Concat(oppositeLikedIds).Concat(bannedUserIds).Distinct().ToList();
 
         var candidates = await _userProfileRepository.GetCandidatesForUserAsync(new GetUserProfilesDbRequestDto(
             currentUserId,

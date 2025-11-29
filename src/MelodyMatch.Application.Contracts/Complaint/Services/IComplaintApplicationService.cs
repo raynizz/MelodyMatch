@@ -19,4 +19,12 @@ public interface IComplaintApplicationService : IApplicationService
     Task<ComplaintResponseDto> UpdateComplaintAsync(UpdateComplaintRequestDto request);
     
     Task DeleteComplaintAsync(Guid id);
+    
+    Task<ComplaintResponseDto> BanUserFromComplaintAsync(BanUserFromComplaintRequestDto request);
+    
+    Task<ComplaintResponseDto> ResolveComplaintAsync(ResolveComplaintRequestDto request);
+    
+    Task UnbanUserAsync(UnbanUserRequestDto request);
+    
+    Task<ComplaintResponseDto> UpdateComplaintStatusAsync(UpdateComplaintStatusRequestDto request);
 }

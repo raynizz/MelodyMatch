@@ -1,4 +1,4 @@
-﻿﻿using System.Linq;
+﻿using System.Linq;
 using AutoMapper;
 using MelodyMatch.Chat.DTOs.Requests;
 using MelodyMatch.Chat.DTOs.Responses;
@@ -6,6 +6,7 @@ using MelodyMatch.Complaint.DTOs.Requests;
 using MelodyMatch.Complaint.DTOs.Responses;
 using MelodyMatch.MelodyMatchUser.DTOs.Requests;
 using MelodyMatch.MelodyMatchUser.DTOs.Responses;
+using MelodyMatch.Notification.DTOs.Responses;
 using MelodyMatch.ProfilePhoto.DTOs.Responses;
 using MelodyMatch.Reaction.DTOs.Requests;
 using MelodyMatch.Reaction.DTOs.Responses;
@@ -28,6 +29,7 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
         MapMessages();
         MapProfilePhotos();
         MapIdentityUser();
+        MapNotifications();
     }
     
     private void MapUserProfile()
@@ -71,15 +73,19 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
         CreateMap<UpdateComplaintRequestDto, Complaints.Complaint>()
             .IgnoreAuditedObjectProperties();
         
-        CreateMap<Complaints.Complaint, ComplaintResponseDto>();
+        CreateMap<Complaints.Complaint, ComplaintResponseDto>()
+            .ForMember(dest => dest.ReportedUserProfile, opt => opt.MapFrom(src => src.ReportedUser.UserProfile))
+            .ForMember(dest => dest.ReportedUser, opt => opt.MapFrom(src => src.ReportedUser))
+            .ForMember(dest => dest.Reporter, opt => opt.MapFrom(src => src.Reporter));
     }
     
     private void MapChats()
     {
         CreateMap<Chats.Chat, ChatResponseDto>()
             .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.Participants.Select(p => p.User)))
-            .ForMember(dest => dest.LastMessage, opt => opt.MapFrom(src => src.Messages.OrderByDescending(m => m.CreationTime).FirstOrDefault()))
-            .ForMember(dest => dest.UnreadCount, opt => opt.Ignore()); // Will be set manually in the service
+            .ForMember(dest => dest.LastMessage,
+                opt => opt.MapFrom(src => src.Messages.OrderByDescending(m => m.CreationTime).FirstOrDefault()))
+            .ForMember(dest => dest.UnreadCount, opt => opt.Ignore());
         
         CreateMap<CreateChatRequestDto, Chats.Chat>()
             .IgnoreAuditedObjectProperties();
@@ -109,5 +115,10 @@ public class MelodyMatchApplicationAutoMapperProfile : Profile
         CreateMap<IdentityUserUpdateDto, Volo.Abp.Identity.IdentityUser>()
             .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
             .IgnoreAuditedObjectProperties();
+    }
+    
+    private void MapNotifications()
+    {
+        CreateMap<Notifications.Notification, NotificationResponseDto>();
     }
 }

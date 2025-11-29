@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+﻿﻿using System.Reflection;
 using MelodyMatch.Chats;
 using MelodyMatch.Complaints;
+using MelodyMatch.Notifications;
 using MelodyMatch.ProfilePhotos;
 using MelodyMatch.Reactions;
 using MelodyMatch.ShownUserProfiles;
@@ -81,6 +82,10 @@ public class MelodyMatchDbContext :
     public DbSet<ShownUserProfile> ShownUserProfiles { get; set; }
     
     public DbSet<ProfilePhoto> ProfilePhotos { get; set; }
+    
+    public DbSet<UserBan> UserBans { get; set; }
+    
+    public DbSet<Notification> Notifications { get; set; }
     
     #endregion
     
