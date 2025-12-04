@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MelodyMatch.Constants;
 using MelodyMatch.Contexts.MelodyMatchUser;
 using MelodyMatch.DTOs.UserProfile.DbRequests;
+using MelodyMatch.Enums.UserProfile;
 using MelodyMatch.Enums.Reactions;
 using MelodyMatch.Exceptions;
 using MelodyMatch.Extensions;
@@ -16,7 +17,6 @@ using MelodyMatch.ShownUserProfiles;
 using MelodyMatch.UserProfiles;
 using MelodyMatch.Users;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Volo.Abp.Application.Services;
 
@@ -48,7 +48,6 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
         _userBanRepository = userBanRepository;
     }
 
-
     public async Task<List<SuggestedUserResponseDto>> GetSuggestionsForCurrentUserAsync(int? take = 10)
     {
         var currentUserId = await _currentMelodyMatchUser.GetIdAsync();
@@ -63,18 +62,15 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
         var oppositeLikedIds = await _reactionRepository.GetLikerUserIdsForCurrentUserAsync(currentUserId);
         var shownIds = await _shownUserRepository.GetRecentlyShownUserIdsAsync(currentUserId, 3);
 
-        // Get all banned user IDs
-        var bannedUsersQuery = await _userBanRepository.GetQueryableAsync();
         var now = DateTime.UtcNow;
-        var bannedUserIds = await AsyncExecuter.ToListAsync(
-            bannedUsersQuery
-                .Where(x => x.IsActive && 
-                           !x.IsDeleted &&
-                           (x.IsPermanent || x.ExpiresAt == null || x.ExpiresAt > now))
-                .Select(x => x.UserId)
-        );
+        var bannedUserIds = await GetActiveBannedUserIdsAsync(now);
 
-        var excludedIds = reportedIds.Concat(shownIds).Concat(oppositeLikedIds).Concat(bannedUserIds).Distinct().ToList();
+        var excludedIds = reportedIds
+            .Concat(shownIds)
+            .Concat(oppositeLikedIds)
+            .Concat(bannedUserIds)
+            .Distinct()
+            .ToList();
 
         var candidates = await _userProfileRepository.GetCandidatesForUserAsync(new GetUserProfilesDbRequestDto(
             currentUserId,
@@ -121,8 +117,12 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
         }
         
         var likesForCurrentUser = await _reactionRepository.GetLikesForCurrentUserAsync(currentUserId);
+        var shownIds = await _shownUserRepository.GetRecentlyShownUserIdsAsync(currentUserId, 3);
+        var candidatesLikes = likesForCurrentUser
+            .Where(p => !shownIds.Contains(p.FromUserId))
+            .ToList();
         
-        return likesForCurrentUser.Select(p => new SuggestedUserResponseDto
+        return candidatesLikes.Select(p => new SuggestedUserResponseDto
         {
             MelodyMatchUserId = p.FromUserId,
             Name = p.FromUser.IdentityUser.Name,
@@ -138,19 +138,68 @@ public class RecommendationApplicationService : ApplicationService, IRecommendat
             .ToList();
     }
 
-    private double ComputeCompatibilityScore(UserProfiles.UserProfile current, UserProfiles.UserProfile other)
+    private static double ComputeCompatibilityScore(UserProfiles.UserProfile current, UserProfiles.UserProfile other)
     {
-        double score = 0;
+        var currentVector = BuildInterestVector(current);
+        var otherVector = BuildInterestVector(other);
 
-        score += 1 - (Math.Abs(current.Age - other.Age) / 50.0);
+        var interestSimilarity = CosineSimilarity(currentVector, otherVector);
 
-        if (current.Interests != null && other.Interests != null)
+        var ageFactor = 1 - (Math.Abs(current.Age - other.Age) / 50.0);
+        ageFactor = Math.Max(0, ageFactor);
+
+        var score = interestSimilarity * 0.7 + ageFactor * 0.3;
+
+        return score;
+    }
+
+    private static List<int> BuildInterestVector(UserProfiles.UserProfile profile)
+    {
+        var interestsCount = Enum.GetValues<InterestType>().Length;
+        var vector = new int[interestsCount];
+
+        if (profile.Interests != null)
         {
-            var common = current.Interests.Intersect(other.Interests).Count();
-            score += common * 0.3;
+            foreach (var interest in profile.Interests)
+            {
+                vector[(int)interest] = 1;
+            }
         }
 
-        score *= Random.Shared.NextDouble() * 0.3 + 0.7;
-        return score;
+        return vector.ToList();
+    }
+
+    private static double CosineSimilarity(List<int> vectorA, List<int> vectorB)
+    {
+        double dot = 0;
+        double magA = 0;
+        double magB = 0;
+
+        for (var i = 0; i < vectorA.Count; i++)
+        {
+            dot += vectorA[i] * vectorB[i];
+            magA += vectorA[i] * vectorA[i];
+            magB += vectorB[i] * vectorB[i];
+        }
+
+        if (magA == 0 || magB == 0)
+        {
+            return 0;
+        }
+
+        return dot / (Math.Sqrt(magA) * Math.Sqrt(magB));
+    }
+    
+    private async Task<List<Guid>> GetActiveBannedUserIdsAsync(DateTime now)
+    {
+        var query = await _userBanRepository.GetQueryableAsync();
+
+        return await AsyncExecuter.ToListAsync(
+            query
+                .Where(x => x.IsActive &&
+                            !x.IsDeleted &&
+                            (x.IsPermanent || x.ExpiresAt == null || x.ExpiresAt > now))
+                .Select(x => x.UserId)
+        );
     }
 }
