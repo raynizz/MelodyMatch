@@ -15,4 +15,9 @@ public static class MelodyMatchDomainErrorCodes
         public const string UserProfileNotFilled = "MelodyMatch:UserProfile:00001";
         public const string ProfilePhotoLimitExceeded = "MelodyMatch:UserProfile:00002";
     }
+
+    public static class MelodyMatchUser
+    {
+        public const string UserProfileWasBanned = "MelodyMatch:MelodyMatchUser:00001";
+    }
 }

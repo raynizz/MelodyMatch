@@ -34,6 +34,7 @@
     "Enum:InterestType:Ambient": "Ембієнт",
     "Enum:GenderType:Male": "Чоловік",
     "Enum:GenderType:Female": "Жінка",
-    "Enum:GenderType:NotSpecified": "Не вказано"
+    "Enum:GenderType:NotSpecified": "Не вказано",
+    "MelodyMatch:MelodyMatchUser:00001": "Ваш акаунт заблоковано. Причина: "
   }
 }

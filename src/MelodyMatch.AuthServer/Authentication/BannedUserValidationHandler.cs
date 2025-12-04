@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using MelodyMatch.Localization;
 using MelodyMatch.Users;
+using Microsoft.Extensions.Localization;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
 using Volo.Abp.DependencyInjection;
@@ -14,15 +16,18 @@ public class BannedUserValidationHandler : IOpenIddictServerHandler<ValidateToke
     private readonly IdentityUserManager _identityUserManager;
     private readonly IMelodyMatchUserRepository _melodyMatchUserRepository;
     private readonly IUserBanRepository _userBanRepository;
+    private readonly IStringLocalizer<MelodyMatchResource> _localizer;
 
     public BannedUserValidationHandler(
         IdentityUserManager identityUserManager,
         IMelodyMatchUserRepository melodyMatchUserRepository,
-        IUserBanRepository userBanRepository)
+        IUserBanRepository userBanRepository,
+        IStringLocalizer<MelodyMatchResource> localizer)
     {
         _identityUserManager = identityUserManager;
         _melodyMatchUserRepository = melodyMatchUserRepository;
         _userBanRepository = userBanRepository;
+        _localizer = localizer;
     }
 
     public static OpenIddictServerHandlerDescriptor Descriptor { get; }
@@ -64,10 +69,13 @@ public class BannedUserValidationHandler : IOpenIddictServerHandler<ValidateToke
                 
                 if (activeBan != null)
                 {
-                    var reason = activeBan.Reason ?? "Violation";
+                    var localizedMessage = _localizer[MelodyMatchDomainErrorCodes.MelodyMatchUser.UserProfileWasBanned];
+                               
+                    var formattedMessage = localizedMessage.Value + activeBan.Reason;
+                    
                     context.Reject(
                         error: OpenIddictConstants.Errors.AccessDenied,
-                        description: $"Your account was banned. Reason: {reason}",
+                        description: formattedMessage,
                         uri: null);
                     
                     return;
