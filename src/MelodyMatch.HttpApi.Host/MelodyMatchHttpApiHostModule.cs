@@ -14,7 +14,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MelodyMatch.EntityFrameworkCore;
-using MelodyMatch.MultiTenancy;
 using Microsoft.OpenApi.Models;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
@@ -23,17 +22,19 @@ using Volo.Abp.AspNetCore.Mvc.UI.MultiTenancy;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.Caching;
-using Volo.Abp.DistributedLocking;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.VirtualFileSystem;
 using ElmahCore.Mvc;
+using MelodyMatch.Authentication;
 using MelodyMatch.File;
+using MelodyMatch.Hubs;
 using MelodyMatch.Localization;
 using MelodyMatch.MelodyMatchUser;
 using MelodyMatch.MelodyMatchUser.Services;
+using MelodyMatch.Middleware;
 using MelodyMatch.Workers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
@@ -298,13 +299,15 @@ public class MelodyMatchHttpApiHostModule : AbpModule
             };
         });
         
+        app.UseMiddleware<CultureMiddleware>();
+        
         app.UseCorrelationId();
         app.MapAbpStaticAssets();
         app.UseRouting();
         app.UseCors();
         app.UseAuthentication();
 
-        app.UseMiddleware<Authentication.BanCheckMiddleware>();
+        app.UseMiddleware<BanCheckMiddleware>();
         
         app.UseUnitOfWork();
         app.UseDynamicClaims();
@@ -332,8 +335,8 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints(endpoints =>
         {
-            endpoints.MapHub<Hubs.ChatHub>("/hubs/chat");
-            endpoints.MapHub<Hubs.NotificationHub>("/hubs/notification");
+            endpoints.MapHub<ChatHub>("/hubs/chat");
+            endpoints.MapHub<NotificationHub>("/hubs/notification");
         });
     }
 }
