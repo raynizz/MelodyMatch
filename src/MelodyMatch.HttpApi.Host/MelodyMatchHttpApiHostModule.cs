@@ -1,18 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MelodyMatch.EntityFrameworkCore;
-using MelodyMatch.MultiTenancy;
 using Microsoft.OpenApi.Models;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
@@ -21,21 +22,31 @@ using Volo.Abp.AspNetCore.Mvc.UI.MultiTenancy;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.Caching;
-using Volo.Abp.DistributedLocking;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.VirtualFileSystem;
 using ElmahCore.Mvc;
+using MelodyMatch.Authentication;
+using MelodyMatch.File;
+using MelodyMatch.Hubs;
+using MelodyMatch.Localization;
+using MelodyMatch.MelodyMatchUser;
+using MelodyMatch.MelodyMatchUser.Services;
+using MelodyMatch.Middleware;
+using MelodyMatch.Workers;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
+using Volo.Abp.AspNetCore.Mvc.Libs;
+using Volo.Abp.BackgroundWorkers;
 
 namespace MelodyMatch;
 
 [DependsOn(
     typeof(MelodyMatchHttpApiModule),
     typeof(AbpAutofacModule),
-    typeof(AbpDistributedLockingModule),
     typeof(AbpAspNetCoreMvcUiMultiTenancyModule),
     typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
     typeof(MelodyMatchApplicationModule),
@@ -58,6 +69,12 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         ConfigureSwaggerServices(context, configuration);
         ConfigureLocalization();
         ConfigureElmah(context);
+        ConfigureSignalR(context);
+        
+        Configure<AbpMvcLibsOptions>(options =>
+        {
+            options.CheckLibs = false;
+        });
     }
     
     private void ConfigureElmah(ServiceConfigurationContext context)
@@ -70,8 +87,8 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         Configure<AbpLocalizationOptions>(options =>
         {
             options.Languages.Add(new LanguageInfo("en", "en", "English"));
-            options.Languages.Add(new LanguageInfo("uk", "uk", "Ukrainian"));
-            options.DefaultResourceType = typeof(MelodyMatchApplicationContractsModule);
+            options.Languages.Add(new LanguageInfo("uk", "uk", "Українська"));
+            options.DefaultResourceType = typeof(MelodyMatchResource);
 
         });
     }
@@ -115,7 +132,7 @@ public class MelodyMatchHttpApiHostModule : AbpModule
 
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
-        // TODO: add Internal User Service like in Genesis project
+        context.Services.AddSingleton<IMelodyMatchUserInternalAppService, MelodyMatchUserInternalAppService>();
         context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddAbpJwtBearer(options =>
             {
@@ -130,15 +147,83 @@ public class MelodyMatchHttpApiHostModule : AbpModule
                 {
                     ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
                 };
-                // TODO: add token validation like in Genesis project
                 options.Audience = "MelodyMatch";
+                
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = async context =>
+                    {
+                        await HandleTokenValidated(context, configuration);
+                        await Task.CompletedTask.ConfigureAwait(false);
+                    }
+                };
             });
 
-        // probably it doesn't needed
-        /*context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
+        context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
-        });*/
+        });
+    }
+    
+    private static async Task HandleTokenValidated(TokenValidatedContext context, IConfiguration configuration)
+    {
+        var appService = context.HttpContext.RequestServices.GetService<IMelodyMatchUserInternalAppService>();
+        if(appService == null || context.Principal == null)
+        {
+            return;
+        }
+        var configClaims = configuration["AuthServer:ClaimsToCheck"];
+        var claimsToCheck = configClaims.Split(",");
+        var email = "";
+        foreach (var claim in claimsToCheck)
+        {
+            var emailClaim = context.Principal.Claims .FirstOrDefault(x => x.Type == claim);
+            if (emailClaim == null)
+            {
+                continue;
+            }
+
+            email = emailClaim.Value;
+            if (!string.IsNullOrWhiteSpace(email) && email.Contains("@"))
+            {
+                break;
+            }
+        }
+        if(email.IsNullOrEmpty())
+        {
+            return;
+        }
+        var webUser = await appService.GetUserInfoByEmail(email);
+        if (webUser == null)
+        {
+            return;
+        }
+        
+        var userBanRepository = context.HttpContext.RequestServices.GetService<Users.IUserBanRepository>();
+        if (userBanRepository != null)
+        {
+            var isBanned = await userBanRepository.IsUserBannedAsync(webUser.Id);
+            if (isBanned)
+            {
+                context.Fail("\nYour account has been blocked. Please contact the administration for more information.");
+                return;
+            }
+        }
+        
+        var appIdentity = new ClaimsIdentity(new List<Claim> { new Claim("UserInfoDto", JsonSerializer.Serialize(webUser)) });
+        context.Principal?.AddIdentity(appIdentity);
     }
 
     private static void ConfigureSwaggerServices(ServiceConfigurationContext context, IConfiguration configuration)
@@ -177,31 +262,64 @@ public class MelodyMatchHttpApiHostModule : AbpModule
         });
     }
 
+    private void ConfigureSignalR(ServiceConfigurationContext context)
+    {
+        context.Services.AddSignalR();
+    }
+
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
         var env = context.GetEnvironment();
+        
+        var workerManager = context.ServiceProvider.GetRequiredService<IBackgroundWorkerManager>();
+        workerManager.AddAsync(context.ServiceProvider.GetRequiredService<AvatarCleanupWorker>());
+        workerManager.AddAsync(context.ServiceProvider.GetRequiredService<ProfilePhotoCleanupWorker>());
 
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
         }
 
-        app.UseAbpRequestLocalization();
+        var supportedCultures = new[]
+        {
+            new CultureInfo("en"),
+            new CultureInfo("uk")
+        };
+        app.UseAbpRequestLocalization(options =>
+        {
+            options.DefaultRequestCulture = new RequestCulture("en");
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+            options.RequestCultureProviders = new List<IRequestCultureProvider>
+            {
+                new QueryStringRequestCultureProvider(),
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider()
+            };
+        });
+        
+        app.UseMiddleware<CultureMiddleware>();
+        
         app.UseCorrelationId();
         app.MapAbpStaticAssets();
         app.UseRouting();
         app.UseCors();
         app.UseAuthentication();
 
-        if (MultiTenancyConsts.IsEnabled)
-        {
-            app.UseMultiTenancy();
-        }
-
+        app.UseMiddleware<BanCheckMiddleware>();
+        
         app.UseUnitOfWork();
         app.UseDynamicClaims();
         app.UseAuthorization();
+        
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+            }
+        });
 
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>
@@ -215,6 +333,10 @@ public class MelodyMatchHttpApiHostModule : AbpModule
 
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
-        app.UseConfiguredEndpoints();
+        app.UseConfiguredEndpoints(endpoints =>
+        {
+            endpoints.MapHub<ChatHub>("/hubs/chat");
+            endpoints.MapHub<NotificationHub>("/hubs/notification");
+        });
     }
 }

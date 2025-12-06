@@ -14,12 +14,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Volo.Abp.Account.Application" Version="9.3.3" />
     <PackageReference Include="Volo.Abp.Identity.Application" Version="9.3.3" />
     <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="9.3.3" />
     <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="9.3.3" />
     <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="9.3.3" />
     <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="9.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions">
+      <HintPath>..\..\..\..\..\..\usr\local\share\dotnet\shared\Microsoft.AspNetCore.App\9.0.10\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Http.Features">
+      <HintPath>..\..\..\..\..\..\usr\local\share\dotnet\shared\Microsoft.AspNetCore.App\9.0.10\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

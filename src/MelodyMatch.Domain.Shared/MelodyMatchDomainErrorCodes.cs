@@ -2,5 +2,22 @@
 
 public static class MelodyMatchDomainErrorCodes
 {
-    /* You can add your business exception error codes here, as constants */
+    public static class File
+    {
+        public const string FileIsEmpty = "MelodyMatch:File:00001";
+        public const string FileSizeExceedsLimit = "MelodyMatch:File:00002";
+        public const string InvalidFileExtension = "MelodyMatch:File:00003";
+        public const string EmptyFileName = "MelodyMatch:File:00004";
+    }
+    
+    public static class UserProfile
+    {
+        public const string UserProfileNotFilled = "MelodyMatch:UserProfile:00001";
+        public const string ProfilePhotoLimitExceeded = "MelodyMatch:UserProfile:00002";
+    }
+
+    public static class MelodyMatchUser
+    {
+        public const string UserProfileWasBanned = "MelodyMatch:MelodyMatchUser:00001";
+    }
 }

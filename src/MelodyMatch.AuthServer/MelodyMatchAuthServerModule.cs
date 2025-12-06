@@ -1,55 +1,53 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Localization.Resources.AbpUi;
-using Medallion.Threading;
+using MelodyMatch.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MelodyMatch.EntityFrameworkCore;
 using MelodyMatch.Localization;
-using MelodyMatch.MultiTenancy;
+using Microsoft.AspNetCore.Localization;
 using Volo.Abp;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
-using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
-using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
-using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
-using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Auditing;
 using Volo.Abp.Autofac;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Caching;
-using Volo.Abp.DistributedLocking;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Security.Claims;
-using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.Account.Localization;
+using Volo.Abp.AspNetCore.Mvc.AntiForgery;
+using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite;
+using Volo.Abp.UI.Navigation.Urls;
 
 namespace MelodyMatch;
 
 [DependsOn(
     typeof(AbpAutofacModule),
-    typeof(AbpDistributedLockingModule),
-    typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpAccountApplicationModule),
     typeof(AbpAccountHttpApiModule),
+    typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
+    typeof(AbpOpenIddictAspNetCoreModule),
+    typeof(AbpOpenIddictDomainModule),
     typeof(MelodyMatchEntityFrameworkCoreModule),
     typeof(AbpAspNetCoreSerilogModule)
-    )]
+)]
 public class MelodyMatchAuthServerModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
-        var configuration = context.Services.GetConfiguration();
 
         PreConfigure<OpenIddictBuilder>(builder =>
         {
@@ -59,6 +57,11 @@ public class MelodyMatchAuthServerModule : AbpModule
                 options.UseLocalServer();
                 options.UseAspNetCore();
             });
+        });
+        
+        PreConfigure<OpenIddictServerBuilder>(builder =>
+        {
+            builder.AddEventHandler(BannedUserValidationHandler.Descriptor);
         });
 
         if (!hostingEnvironment.IsDevelopment())
@@ -70,7 +73,7 @@ public class MelodyMatchAuthServerModule : AbpModule
 
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "0acfd2a2-00b0-4011-8f4a-390809853aee");
+                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "0c8f4cf0-5d47-4e6f-b691-3323a3ed0757");
             });
         }
     }
@@ -88,17 +91,13 @@ public class MelodyMatchAuthServerModule : AbpModule
                     typeof(AbpUiResource),
                     typeof(AccountResource)
                 );
+            options.Languages.Add(new  LanguageInfo("en", "en", "English"));
+            options.Languages.Add(new  LanguageInfo("uk", "uk", "Українська"));
         });
-
-        Configure<AbpBundlingOptions>(options =>
+        
+        Configure<AbpAntiForgeryOptions>(options =>
         {
-            options.StyleBundles.Configure(
-                LeptonXLiteThemeBundles.Styles.Global,
-                bundle =>
-                {
-                    bundle.AddFiles("/global-styles.css");
-                }
-            );
+            options.AutoValidate = false;
         });
 
         Configure<AbpAuditingOptions>(options =>
@@ -115,7 +114,19 @@ public class MelodyMatchAuthServerModule : AbpModule
                 options.FileSets.ReplaceEmbeddedByPhysical<MelodyMatchDomainModule>(Path.Combine(hostingEnvironment.ContentRootPath, $"..{Path.DirectorySeparatorChar}MelodyMatch.Domain"));
             });
         }
+        
+        PreConfigure<OpenIddictServerBuilder>(builder =>
+        {
+            builder.AllowPasswordFlow();
+            builder.AllowRefreshTokenFlow();
 
+            builder.SetTokenEndpointUris("/connect/token");
+
+            builder.AddEphemeralEncryptionKey()
+                .AddEphemeralSigningKey();
+        });
+
+        
         Configure<AppUrlOptions>(options =>
         {
             options.Applications["MVC"].RootUrl = configuration["App:SelfUrl"];
@@ -169,13 +180,25 @@ public class MelodyMatchAuthServerModule : AbpModule
         {
             app.UseDeveloperExceptionPage();
         }
-
-        app.UseAbpRequestLocalization();
-
-        if (!env.IsDevelopment())
+        
+        var supportedCultures = new[]
         {
-            app.UseErrorPage();
-        }
+            new CultureInfo("en"),
+            new CultureInfo("uk")
+        };
+
+        app.UseAbpRequestLocalization(options =>
+        {
+            options.DefaultRequestCulture = new RequestCulture("en");
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+            options.RequestCultureProviders = new List<IRequestCultureProvider>
+            {
+                new QueryStringRequestCultureProvider(),
+                new CookieRequestCultureProvider(),
+                new AcceptLanguageHeaderRequestCultureProvider()
+            };
+        });
 
         app.UseCorrelationId();
         app.MapAbpStaticAssets();
@@ -183,11 +206,6 @@ public class MelodyMatchAuthServerModule : AbpModule
         app.UseCors();
         app.UseAuthentication();
         app.UseAbpOpenIddictValidation();
-
-        if (MultiTenancyConsts.IsEnabled)
-        {
-            app.UseMultiTenancy();
-        }
 
         app.UseUnitOfWork();
         app.UseDynamicClaims();

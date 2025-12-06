@@ -1,10 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
+using Volo.Abp.AspNetCore.Mvc.Libs;
 
 namespace MelodyMatch;
 
@@ -29,6 +31,17 @@ public class Program
         {
             Log.Information("Starting MelodyMatch.HttpApi.Host.");
             var builder = WebApplication.CreateBuilder(args);
+            
+            if (string.IsNullOrWhiteSpace(builder.Environment.WebRootPath))
+            {
+                builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            }
+            
+            builder.Services.Configure<AbpMvcLibsOptions>(options =>
+            {
+                options.CheckLibs = false;
+            });
+            
             builder.Host.AddAppSettingsSecretsJson()
                 .UseAutofac()
                 .UseSerilog();

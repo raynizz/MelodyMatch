@@ -1,4 +1,12 @@
-﻿using System.Reflection;
+﻿﻿using System.Reflection;
+using MelodyMatch.Chats;
+using MelodyMatch.Complaints;
+using MelodyMatch.Notifications;
+using MelodyMatch.ProfilePhotos;
+using MelodyMatch.Reactions;
+using MelodyMatch.ShownUserProfiles;
+using MelodyMatch.UserProfiles;
+using MelodyMatch.Users;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -55,6 +63,32 @@ public class MelodyMatchDbContext :
 
     #endregion
 
+    #region Domain specific entities
+    
+    public DbSet<MelodyMatchUser> MelodyMatchUsers { get; set; }
+    
+    public DbSet<UserProfile> UserProfiles { get; set; }
+    
+    public DbSet<Reaction> Reactions { get; set; }
+    
+    public DbSet<Message> Messages { get; set; }
+    
+    public DbSet<Chat> Chats { get; set; }
+    
+    public DbSet<Complaint> Complaints { get; set; }
+    
+    public DbSet<ChatParticipant> ChatParticipants { get; set; }
+    
+    public DbSet<ShownUserProfile> ShownUserProfiles { get; set; }
+    
+    public DbSet<ProfilePhoto> ProfilePhotos { get; set; }
+    
+    public DbSet<UserBan> UserBans { get; set; }
+    
+    public DbSet<Notification> Notifications { get; set; }
+    
+    #endregion
+    
     public MelodyMatchDbContext(DbContextOptions<MelodyMatchDbContext> options)
         : base(options)
     {
@@ -65,8 +99,6 @@ public class MelodyMatchDbContext :
     {
         base.OnModelCreating(builder);
 
-        /* Include modules to your migration db context */
-
         builder.ConfigurePermissionManagement();
         builder.ConfigureSettingManagement();
         builder.ConfigureBackgroundJobs();
@@ -76,14 +108,5 @@ public class MelodyMatchDbContext :
         builder.ConfigureFeatureManagement();
         builder.ConfigureTenantManagement();
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
-        /* Configure your own tables/entities inside here */
-
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(MelodyMatchConsts.DbTablePrefix + "YourEntities", MelodyMatchConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
     }
 }
