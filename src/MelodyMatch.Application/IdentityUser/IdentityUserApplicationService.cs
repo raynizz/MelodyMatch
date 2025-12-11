@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MelodyMatch.Constants;
 using MelodyMatch.IdentityUser.Services;
 using Microsoft.AspNetCore.Authorization;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Identity;
 
@@ -65,5 +67,19 @@ public class IdentityUserApplicationService : ApplicationService, IIdentityUserA
         await _identityUserRepository.DeleteAsync(identityUser);
         
         return ObjectMapper.Map<Volo.Abp.Identity.IdentityUser, IdentityUserDto>(identityUser);
+    }
+
+    public async Task<PagedResultDto<IdentityUserDto>> GetListAsync(int skipCount, int maxResultCount)
+    {
+        var totalCount = await _identityUserRepository.GetCountAsync();
+        
+        var identityUsers = await _identityUserRepository.GetListAsync(
+            sorting: "userName",
+            maxResultCount: maxResultCount,
+            skipCount: skipCount);
+        
+        return new PagedResultDto<IdentityUserDto>(
+            totalCount,
+            ObjectMapper.Map<List<Volo.Abp.Identity.IdentityUser>, List<IdentityUserDto>>(identityUsers));
     }
 }

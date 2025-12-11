@@ -19,6 +19,8 @@ public interface IUserProfileApplicationService : IApplicationService
     
     Task<UserProfileResponseDto> UpdateAsync(UpdateUserProfileRequestDto request);
     
+    Task<UserProfileResponseDto> ClearBioAsync(Guid id);
+    
     Task DeleteByMelodyMatchUserIdAsync(Guid melodyMatchUserId);
     
     Task<PagedResultDto<UserProfileResponseDto>> GetListAsync(UserProfileFilter filter);

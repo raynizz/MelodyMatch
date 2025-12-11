@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MelodyMatch.Controllers.Files;
 
-[Authorize(Roles = RolesConsts.Dater)]
+[Authorize(Roles = RolesConsts.Admin + "," + RolesConsts.Dater)]
 [Route("api/profile-photos")]
 [ApiController]
 public class ProfilePhotoController : ControllerBase

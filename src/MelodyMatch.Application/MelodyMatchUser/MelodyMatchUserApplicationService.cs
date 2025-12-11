@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Domain.Entities;
 
 namespace MelodyMatch.MelodyMatchUser;
 
@@ -91,6 +92,35 @@ public class MelodyMatchUserApplicationService : ApplicationService, IMelodyMatc
         var melodyMatchUser = await _melodyMatchUserRepository.GetByIdentityUserIdAsync(identityUserId);
         
         return ObjectMapper.Map<Users.MelodyMatchUser, MelodyMatchUserResponseDto>(melodyMatchUser);
+    }
+
+    public async Task<MelodyMatchUserResponseDto> GetWithProfileByIdentityUserIdAsync(Guid identityUserId)
+    {
+        var query = await _melodyMatchUserRepository.GetQueryableAsync();
+        
+        var melodyMatchUser = await AsyncExecuter.FirstOrDefaultAsync(
+            query
+                .Where(x => x.IdentityUserId == identityUserId)
+                .Include(x => x.IdentityUser)
+                .Include(x => x.UserProfile));
+        
+        if (melodyMatchUser == null)
+        {
+            throw new EntityNotFoundException(typeof(Users.MelodyMatchUser), identityUserId);
+        }
+        
+        return ObjectMapper.Map<Users.MelodyMatchUser, MelodyMatchUserResponseDto>(melodyMatchUser);
+    }
+
+    public async Task<MelodyMatchUserResponseDto> ClearAvatarAsync(Guid id)
+    {
+        var melodyMatchUser = await _melodyMatchUserRepository.GetByIdAsync(id);
+        
+        melodyMatchUser.AvatarUrl = string.Empty;
+        
+        var updatedMelodyMatchUser = await _melodyMatchUserRepository.UpdateAsync(melodyMatchUser);
+        
+        return ObjectMapper.Map<Users.MelodyMatchUser, MelodyMatchUserResponseDto>(updatedMelodyMatchUser);
     }
 
     public async Task DeleteByIdAsync(Guid id)

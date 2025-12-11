@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Identity;
 
@@ -18,4 +19,6 @@ public interface IIdentityUserApplicationService : IApplicationService
     Task<IdentityUserDto> UpdateAsync(Guid id, IdentityUserUpdateDto request);
     
     Task<IdentityUserDto> DeleteAsync(Guid id);
+    
+    Task<PagedResultDto<IdentityUserDto>> GetListAsync(int skipCount, int maxResultCount);
 }

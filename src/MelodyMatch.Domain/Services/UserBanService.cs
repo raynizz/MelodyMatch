@@ -7,6 +7,7 @@ using MelodyMatch.Notifications;
 using MelodyMatch.Reactions;
 using MelodyMatch.Users;
 using Volo.Abp.Domain.Services;
+using Volo.Abp.Identity;
 
 namespace MelodyMatch.Services;
 
@@ -18,6 +19,7 @@ public class UserBanService : DomainService
     private readonly IChatParticipantRepository _chatParticipantRepository;
     private readonly IChatRepository _chatRepository;
     private readonly IMessageRepository _messageRepository;
+    private readonly IdentityUserManager _identityUserManager;
 
     public UserBanService(
         IUserBanRepository userBanRepository,
@@ -25,7 +27,8 @@ public class UserBanService : DomainService
         IReactionRepository reactionRepository,
         IChatParticipantRepository chatParticipantRepository,
         IChatRepository chatRepository,
-        IMessageRepository messageRepository)
+        IMessageRepository messageRepository,
+        IdentityUserManager identityUserManager)
     {
         _userBanRepository = userBanRepository;
         _notificationRepository = notificationRepository;
@@ -33,15 +36,18 @@ public class UserBanService : DomainService
         _chatParticipantRepository = chatParticipantRepository;
         _chatRepository = chatRepository;
         _messageRepository = messageRepository;
+        _identityUserManager = identityUserManager;
     }
 
-    public async Task BanUserAsync(Guid userId, string reason, Guid? complaintId = null, DateTime? expiresAt = null, bool isPermanent = false)
+    public async Task BanUserAsync(Guid userId, Guid identityUserId, string reason, Guid? complaintId = null, DateTime? expiresAt = null, bool isPermanent = false)
     {
-        // Create ban record
         var ban = new UserBan(userId, reason, complaintId, expiresAt, isPermanent);
         await _userBanRepository.InsertAsync(ban);
+        
+        var identityUser = await _identityUserManager.GetByIdAsync(identityUserId);
+        identityUser.SetIsActive(false);
+        await _identityUserManager.UpdateAsync(identityUser);
 
-        // Delete all reactions from/to banned user
         var userReactions = await _reactionRepository.GetQueryableAsync();
         var reactionsToDelete = userReactions
             .Where(r => r.FromUserId == userId || r.ToUserId == userId)
@@ -52,14 +58,12 @@ public class UserBanService : DomainService
             await _reactionRepository.DeleteAsync(reaction);
         }
 
-        // Delete all chats and messages
         var chatParticipants = await _chatParticipantRepository.GetByUserIdAsync(userId);
         foreach (var participant in chatParticipants)
         {
             var chat = await _chatRepository.GetWithParticipantsAsync(participant.ChatId);
             if (chat != null)
             {
-                // Delete all messages in the chat
                 var messages = await _messageRepository.GetQueryableAsync();
                 var chatMessages = messages.Where(m => m.ChatId == chat.Id).ToList();
                 foreach (var message in chatMessages)
@@ -67,13 +71,12 @@ public class UserBanService : DomainService
                     await _messageRepository.DeleteAsync(message);
                 }
                 
-                // Delete chat
                 await _chatRepository.DeleteAsync(chat);
             }
         }
     }
 
-    public async Task<Notifications.Notification> CreateComplaintResolutionNotificationAsync(
+    public async Task<Notification> CreateComplaintResolutionNotificationAsync(
         Guid reporterId, 
         Guid complaintId, 
         bool wasBanned, 
@@ -97,7 +100,7 @@ public class UserBanService : DomainService
         return await _notificationRepository.InsertAsync(notification);
     }
     
-    public async Task UnbanUserAsync(Guid userId, string? reason = null)
+    public async Task UnbanUserAsync(Guid userId, Guid identityUserId, string? reason = null)
     {
         var dbSet = await _userBanRepository.GetQueryableAsync();
         var activeBans = dbSet
