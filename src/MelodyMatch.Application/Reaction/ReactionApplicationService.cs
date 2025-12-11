@@ -100,14 +100,14 @@ public class ReactionApplicationService : ApplicationService, IReactionApplicati
                     firstMessageSenderId = request.FromUserId;
                 }
                 
-                var evt = new MutualLikeCreatedEvent(
+                var mutualLikeCreatedEvent = new MutualLikeCreatedEvent(
                     userAId: reaction.FromUserId,
                     userBId: reaction.ToUserId,
                     firstMessage: firstMessage,
                     firstMessageSenderId: firstMessageSenderId
                 );
 
-                await _localEventBus.PublishAsync(evt);
+                await _localEventBus.PublishAsync(mutualLikeCreatedEvent);
             }
         }
         

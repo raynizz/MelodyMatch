@@ -36,6 +36,7 @@ public class NotificationApplicationService : ApplicationService, INotificationA
     public async Task<int> GetUnreadCountAsync()
     {
         var currentUserId = await _currentMelodyMatchUser.GetIdAsync();
+        
         return await _notificationRepository.GetUnreadCountAsync(currentUserId);
     }
     

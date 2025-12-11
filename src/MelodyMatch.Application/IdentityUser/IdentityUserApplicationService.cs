@@ -38,7 +38,7 @@ public class IdentityUserApplicationService : ApplicationService, IIdentityUserA
     public async Task<IdentityUserDto> GetByEmailAsync(string email)
     {
         var emailNormalized = email.ToUpper();
-        var identityUser = await _identityUserRepository.FindByNormalizedEmailAsync(email);
+        var identityUser = await _identityUserRepository.FindByNormalizedEmailAsync(emailNormalized);
         
         return ObjectMapper.Map<Volo.Abp.Identity.IdentityUser, IdentityUserDto>(identityUser);
     }

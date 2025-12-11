@@ -12,15 +12,13 @@ namespace MelodyMatch.MelodyMatchUser;
 [RemoteService(false)]
 public class MelodyMatchUserInternalAppService : ApplicationService, IMelodyMatchUserInternalAppService
 {
-    private readonly IMelodyMatchUserRepository _repository;
     private readonly GetUserInfoByEmailHelper _getUserInfoByEmailHelper;
     
     public MelodyMatchUserInternalAppService(
         IConfiguration configuration,
         IMelodyMatchUserRepository repository)
     {
-        _repository = repository;
-        _getUserInfoByEmailHelper = new GetUserInfoByEmailHelper(_repository);
+        _getUserInfoByEmailHelper = new GetUserInfoByEmailHelper(repository);
     }
 
     public async Task<UserInfoDto?> GetUserInfoByEmail(string email)

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using MelodyMatch.Hubs;
+using MelodyMatch.Notification;
 using MelodyMatch.Notification.DTOs.Responses;
 using MelodyMatch.Notification.Services;
 using Microsoft.AspNetCore.SignalR;

@@ -11,7 +11,7 @@ using MelodyMatch.Constants;
 using MelodyMatch.Enums.Complaints;
 using MelodyMatch.Enums.Notifications;
 using MelodyMatch.Extensions;
-using MelodyMatch.Notification.Services;
+using MelodyMatch.Notification;
 using MelodyMatch.Notifications;
 using MelodyMatch.Services;
 using MelodyMatch.Users;
@@ -106,6 +106,7 @@ public class ComplaintApplicationService : ApplicationService, IComplaintApplica
         var complaintDto = ObjectMapper.Map<Complaints.Complaint, ComplaintResponseDto>(complaintWithProfile);
         
         var adminRole = await _identityRoleManager.FindByNameAsync(RolesConsts.Admin);
+        
         if (adminRole != null)
         {
             var adminsInRole = await _identityUserManager.GetUsersInRoleAsync(RolesConsts.Admin);
@@ -113,6 +114,7 @@ public class ComplaintApplicationService : ApplicationService, IComplaintApplica
             foreach (var adminIdentityUser in adminsInRole)
             {
                 var adminUser = await _userRepository.GetByIdentityUserIdAsync(adminIdentityUser.Id);
+                
                 if (adminUser != null)
                 {
                     var reportedUserName = complaintWithProfile.ReportedUser?.IdentityUser?.UserName ?? "Невідомий користувач";

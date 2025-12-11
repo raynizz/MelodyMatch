@@ -48,7 +48,6 @@ public class MessageApplicationService: ApplicationService, IMessageApplicationS
     {
         var currentUserId = await _currentMelodyMatchUser.GetIdAsync();
 
-        // TODO: Add custom exception for unauthorized access
         if (!await _chatParticipantRepository.ExistsInChatAsync(request.ChatId, currentUserId))
         {
             throw new UnauthorizedAccessException("You are not a participant of this chat.");

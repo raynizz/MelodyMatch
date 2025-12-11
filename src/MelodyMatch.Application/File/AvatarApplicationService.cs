@@ -16,12 +16,12 @@ namespace MelodyMatch.File;
 [RemoteService(false)]
 public class AvatarApplicationService : ApplicationService, IAvatarApplicationService
 {
-    private readonly IWebHostEnvironment _env;
+    private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _config;
 
-    public AvatarApplicationService(IWebHostEnvironment env, IConfiguration config)
+    public AvatarApplicationService(IWebHostEnvironment environment, IConfiguration config)
     {
-        _env = env;
+        _environment = environment;
         _config = config;
     }
 
@@ -39,7 +39,7 @@ public class AvatarApplicationService : ApplicationService, IAvatarApplicationSe
             throw new InvalidFileExtensionException(MelodyMatchDomainErrorCodes.File.InvalidFileExtension).WithData("allowedExtensions", string.Join(", ", FileConsts.Avatar.AllowedExtensions));
         }
 
-        var folder = Path.Combine(_env.WebRootPath, FileConsts.Avatar.AvatarFolderPath);
+        var folder = Path.Combine(_environment.WebRootPath, FileConsts.Avatar.AvatarFolderPath);
         Directory.CreateDirectory(folder);
 
         var fileName = $"{Guid.NewGuid()}{fileExtension}";
@@ -50,10 +50,11 @@ public class AvatarApplicationService : ApplicationService, IAvatarApplicationSe
             await file.CopyToAsync(stream);
         }
 
-        var tempLogPath = Path.Combine(_env.WebRootPath, "uploads", FileConsts.Avatar.LogAvatarUploadsFileName);
+        var tempLogPath = Path.Combine(_environment.WebRootPath, "uploads", FileConsts.Avatar.LogAvatarUploadsFileName);
         await System.IO.File.AppendAllTextAsync(tempLogPath, $"{filePath}{Environment.NewLine}");
 
         var baseUrl = _config["App:BaseUrl"]?.TrimEnd('/');
+        
         return $"{baseUrl}/{FileConsts.Avatar.AvatarFolderPath}/{fileName}";
     }
 
@@ -64,7 +65,7 @@ public class AvatarApplicationService : ApplicationService, IAvatarApplicationSe
             throw new EmptyFileNameException(MelodyMatchDomainErrorCodes.File.EmptyFileName);
         }
 
-        var filePath = Path.Combine(_env.WebRootPath, FileConsts.Avatar.AvatarFolderPath, fileName);
+        var filePath = Path.Combine(_environment.WebRootPath, FileConsts.Avatar.AvatarFolderPath, fileName);
         
         if (System.IO.File.Exists(filePath))
         {
