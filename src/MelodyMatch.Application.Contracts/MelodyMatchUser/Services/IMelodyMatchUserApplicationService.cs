@@ -22,6 +22,10 @@ public interface IMelodyMatchUserApplicationService : IApplicationService
     
     Task<MelodyMatchUserResponseDto> GetByIdentityUserIdAsync(Guid identityUserId);
     
+    Task<MelodyMatchUserResponseDto> GetWithProfileByIdentityUserIdAsync(Guid identityUserId);
+    
+    Task<MelodyMatchUserResponseDto> ClearAvatarAsync(Guid id);
+    
     Task DeleteByIdAsync(Guid id);
     
     Task DeleteByIdentityUserIdAsync(Guid identityUserId);

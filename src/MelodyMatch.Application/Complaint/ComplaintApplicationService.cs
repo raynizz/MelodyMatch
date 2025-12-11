@@ -166,9 +166,12 @@ public class ComplaintApplicationService : ApplicationService, IComplaintApplica
         {
             throw new UserFriendlyException("This complain was reviewed");
         }
+        
+        var reportedUser = await _userRepository.GetByIdAsync(complaint.ReportedUserId);
 
         await _userBanService.BanUserAsync(
             complaint.ReportedUserId,
+            reportedUser.IdentityUserId,
             request.BanReason,
             complaint.Id,
             null,
@@ -177,7 +180,6 @@ public class ComplaintApplicationService : ApplicationService, IComplaintApplica
         complaint.Status = ComplaintStatus.Resolved;
         await _complaintRepository.UpdateAsync(complaint);
 
-        var reportedUser = await _userRepository.GetByIdAsync(complaint.ReportedUserId);
         var reportedUserName = reportedUser.IdentityUser.UserName ?? "Unknown";
 
         var notification = await _userBanService.CreateComplaintResolutionNotificationAsync(
@@ -235,7 +237,7 @@ public class ComplaintApplicationService : ApplicationService, IComplaintApplica
             throw new UserFriendlyException("User not found");
         }
         
-        await _userBanService.UnbanUserAsync(request.UserId, request.Reason);
+        await _userBanService.UnbanUserAsync(request.UserId, user.IdentityUserId, request.Reason);
         
         var complaint = await _complaintRepository.GetByIdAsync(request.ComplaintId);
         complaint.Status = ComplaintStatus.Dismissed;

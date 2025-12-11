@@ -60,6 +60,17 @@ public class UserProfileApplicationService : ApplicationService, IUserProfileApp
         return ObjectMapper.Map<UserProfiles.UserProfile, UserProfileResponseDto>(updatedUserProfile);
     }
 
+    public async Task<UserProfileResponseDto> ClearBioAsync(Guid id)
+    {
+        var userProfile = await _userProfileRepository.GetByIdAsync(id);
+        
+        userProfile.Bio = string.Empty;
+        
+        var updatedUserProfile = await _userProfileRepository.UpdateAsync(userProfile);
+        
+        return ObjectMapper.Map<UserProfiles.UserProfile, UserProfileResponseDto>(updatedUserProfile);
+    }
+
     public async Task DeleteByMelodyMatchUserIdAsync(Guid melodyMatchUserId)
     {
         await _userProfileRepository.DeleteByMelodyMatchUserIdAsync(melodyMatchUserId);
