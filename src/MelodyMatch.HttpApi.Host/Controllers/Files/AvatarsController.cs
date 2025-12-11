@@ -9,7 +9,7 @@ using Volo.Abp.AspNetCore.Mvc;
 namespace MelodyMatch.Controllers.Files;
 
 [Authorize(Roles = RolesConsts.Admin + "," + RolesConsts.Dater)]
-public class AvatarsController : AbpController
+public class AvatarsController : MelodyMatchController
 {
     private readonly IAvatarApplicationService _avatarApplicationService;
     

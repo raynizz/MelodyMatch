@@ -13,7 +13,7 @@ namespace MelodyMatch.Controllers.Files;
 [Authorize(Roles = RolesConsts.Admin + "," + RolesConsts.Dater)]
 [Route("api/profile-photos")]
 [ApiController]
-public class ProfilePhotoController : ControllerBase
+public class ProfilePhotoController : MelodyMatchController
 {
     private readonly IProfilePhotoApplicationService _profilePhotoApplicationService;
 

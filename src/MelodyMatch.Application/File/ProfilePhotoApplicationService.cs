@@ -19,16 +19,16 @@ namespace MelodyMatch.ProfilePhoto;
 [RemoteService(false)]
 public class ProfilePhotoApplicationService : ApplicationService, IProfilePhotoApplicationService
 {
-    private readonly IWebHostEnvironment _env;
+    private readonly IWebHostEnvironment _environment;
     private readonly IProfilePhotoRepository _repository;
     private readonly IConfiguration _configuration;
 
     public ProfilePhotoApplicationService(
-        IWebHostEnvironment env,
+        IWebHostEnvironment environment,
         IConfiguration configuration,
         IProfilePhotoRepository repository)
     {
-        _env = env;
+        _environment = environment;
         _repository = repository;
         _configuration = configuration;
     }
@@ -36,18 +36,21 @@ public class ProfilePhotoApplicationService : ApplicationService, IProfilePhotoA
     public async Task<ProfilePhotoResponseDto> UploadAsync(IFormFile file, Guid userProfileId)
     {
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        
         if (!FileConsts.Profile.AllowedExtensions.Contains(extension))
         {
             throw new InvalidFileExtensionException(MelodyMatchDomainErrorCodes.File.InvalidFileExtension).WithData("allowedExtensions", string.Join(", ", FileConsts.Avatar.AllowedExtensions));
         }
 
         var existingCount = await _repository.CountByUserProfileIdAsync(userProfileId);
+        
         if (existingCount > FileConsts.Profile.MaxCountPerUserProfile)
         {
             throw new FileCountException(MelodyMatchDomainErrorCodes.UserProfile.ProfilePhotoLimitExceeded).WithData("maxCount", FileConsts.Profile.MaxCountPerUserProfile);
         }
 
-        var folder = Path.Combine(_env.WebRootPath, FileConsts.Profile.ProfileFolderPath);
+        var folder = Path.Combine(_environment.WebRootPath, FileConsts.Profile.ProfileFolderPath);
+        
         if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
@@ -66,18 +69,19 @@ public class ProfilePhotoApplicationService : ApplicationService, IProfilePhotoA
         {
             UserProfileId = userProfileId,
             FileName = fileName,
-            Url = $"{baseUrl}/uploads/profiles/{fileName}",
+            Url = $"{baseUrl}/{FileConsts.Avatar.ProfilePhotoFolderPath}/{fileName}",
             IsConfirmed = true 
         };
 
         await _repository.InsertAsync(photo, autoSave: true);
+        
         return ObjectMapper.Map<ProfilePhotos.ProfilePhoto, ProfilePhotoResponseDto>(photo);
     }
 
     public async Task DeleteAsync(Guid id)
     {
         var photo = await _repository.GetAsync(id);
-        var folder = Path.Combine(_env.WebRootPath, FileConsts.Profile.ProfileFolderPath);
+        var folder = Path.Combine(_environment.WebRootPath, FileConsts.Profile.ProfileFolderPath);
         var filePath = Path.Combine(folder, photo.FileName);
 
         if (System.IO.File.Exists(filePath))

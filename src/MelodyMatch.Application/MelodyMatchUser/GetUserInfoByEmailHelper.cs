@@ -30,16 +30,6 @@ internal class GetUserInfoByEmailHelper
             Username = user.IdentityUser.UserName,
             IdentityUserId = user.IdentityUserId
         };
-        
-        /*
-            Roles = user.GenesisUserRoles
-                .Select(x => x.GenesisRoleId.ToString())
-                .ToList(),
-            RoleNames = user.GenesisUserRoles
-                .Where(x => x.GenesisRole != null)
-                .Select(x => x.GenesisRole.Name)
-                .ToList()
-         */
 
         return userInfoDto;
     }

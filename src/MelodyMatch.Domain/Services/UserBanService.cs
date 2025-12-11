@@ -90,7 +90,7 @@ public class UserBanService : DomainService
         
         var notificationType = wasBanned ? NotificationType.UserBanned : NotificationType.ComplaintDismissed;
         
-        var notification = new Notifications.Notification(
+        var notification = new Notification(
             reporterId,
             notificationType,
             title,

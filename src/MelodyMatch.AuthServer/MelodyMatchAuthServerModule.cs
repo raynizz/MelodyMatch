@@ -102,7 +102,6 @@ public class MelodyMatchAuthServerModule : AbpModule
 
         Configure<AbpAuditingOptions>(options =>
         {
-                //options.IsEnabledForGetRequests = true;
                 options.ApplicationName = "AuthServer";
         });
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MelodyMatch.Chat.DTOs.Requests;
 using MelodyMatch.Chat.Services;
@@ -21,7 +22,7 @@ public class ChatHub : Hub, ITransientDependency
     private readonly ICurrentMelodyMatchUser _currentMelodyMatchUser;
     
     private static readonly Dictionary<Guid, List<string>> UserConnections = new();
-    private static readonly object Lock = new();
+    private static readonly Lock Lock = new();
 
     public ChatHub(
         IMessageApplicationService messageApplicationService,
@@ -39,15 +40,17 @@ public class ChatHub : Hub, ITransientDependency
     {
         var userId = await _currentMelodyMatchUser.GetIdAsync();
         
-        bool wasOffline = false;
+        var wasOffline = false;
         lock (Lock)
         {
-            if (!UserConnections.ContainsKey(userId))
+            if (!UserConnections.TryGetValue(userId, out var value))
             {
-                UserConnections[userId] = new List<string>();
+                value = new List<string>();
+                UserConnections[userId] = value;
                 wasOffline = true;
             }
-            UserConnections[userId].Add(Context.ConnectionId);
+
+            value.Add(Context.ConnectionId);
         }
 
         await base.OnConnectedAsync();
@@ -62,12 +65,12 @@ public class ChatHub : Hub, ITransientDependency
     {
         var userId = await _currentMelodyMatchUser.GetIdAsync();
         
-        bool isNowOffline = false;
+        var isNowOffline = false;
         lock (Lock)
         {
-            if (UserConnections.ContainsKey(userId))
+            if (UserConnections.TryGetValue(userId, out var value))
             {
-                UserConnections[userId].Remove(Context.ConnectionId);
+                value.Remove(Context.ConnectionId);
                 if (UserConnections[userId].Count == 0)
                 {
                     UserConnections.Remove(userId);
@@ -91,6 +94,7 @@ public class ChatHub : Hub, ITransientDependency
         {
             onlineUsers = UserConnections.Keys.ToList();
         }
+        
         return Task.FromResult(onlineUsers);
     }
     
@@ -101,6 +105,7 @@ public class ChatHub : Hub, ITransientDependency
         {
             isOnline = UserConnections.ContainsKey(userId);
         }
+        
         return Task.FromResult(isOnline);
     }
     
@@ -210,14 +215,14 @@ public class ChatHub : Hub, ITransientDependency
         {
             foreach (var userId in userIds)
             {
-                if (UserConnections.ContainsKey(userId))
+                if (UserConnections.TryGetValue(userId, out List<string>? value))
                 {
-                    connectionIds.AddRange(UserConnections[userId]);
+                    connectionIds.AddRange(value);
                 }
             }
         }
 
-        if (connectionIds.Any())
+        if (connectionIds.Count != 0)
         {
             await Clients.Clients(connectionIds).SendAsync(method, data);
         }
